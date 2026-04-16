@@ -1,0 +1,21 @@
+### 1. Sistema de Ficheiros (File System) e Gestão de Disco
+O seu simulador já possui os periféricos de disco mapeados nas portas de I/O `30` (Sector), `31` (RAM Address) e `32` (Command). 
+* **O Desafio:** Criar a abstração de ficheiros. Em vez de ler setores crus da porta de I/O, o Sistema Operativo teria funções como `file_open()`, `file_write()`, e `file_read()`.
+* **Como funciona:** Teríamos de projetar um mini-FAT (File Allocation Table) ou um sistema de ficheiros contíguo rudimentar no setor 0 do disco para saber onde cada ficheiro começa e acaba, e que setores estão livres.
+
+### 2. O Ciclo de Vida Completo (`exit`, `kill` e `wait`)
+Lembra-se da "Síndrome do Processo Fantasma" que tivemos de contornar com um `while(1)` infinito? Processos reais terminam.
+* **O Desafio:** Implementar a verdadeira "Morte" de um processo.
+* **Como funciona:** Criar a Syscall `exit()`. Quando chamada, o SO liberta a memória alocada no *Heap* (usando o seu `free()`), liberta o PID, e limpa o PCB. Adicionalmente, podemos implementar o `wait()`, permitindo que um Processo Pai durma (`BLOCKED`) até que o Processo Filho chame o `exit()`.
+
+* Implementado: exit()
+
+### 3. Drivers Orientados a Interrupção (O Teclado)
+Atualmente, se uma tarefa quiser ler o teclado (porta `1`), ela tem de fazer *Polling* (ficar a perguntar constantemente "já há tecla?"). Isso desperdiça CPU.
+* **O Desafio:** Criar um *Buffer* de Teclado no Kernel.
+* **Como funciona:** O processo de utilizador chama `read_char()` e, se não houver teclas, o SO bloqueia a tarefa (`BLOCKED`). Quando o utilizador clica numa tecla no simulador físico, uma interrupção de hardware acorda o Kernel, que guarda a tecla num *buffer* (array circular) e acorda o processo que estava à espera, entregando-lhe o caracter. É assim que o Linux lida com o terminal!
+
+### 4. Comunicação Inter-Processos Avançada (Pipes / Mailboxes)
+Os Semáforos garantem que as tarefas não colidem, mas não servem para transferir dados complexos entre elas.
+* **O Desafio:** Fazer a Tarefa A enviar dados para a Tarefa B.
+* **Como funciona:** O SO cria "Caixas de Correio" na memória. A Tarefa A usa uma Syscall `send_message(PID_B, "Ola")`. O SO copia os dados para o espaço seguro do Kernel e notifica a Tarefa B. Se a Tarefa B fizer `receive_message()` antes de a mensagem chegar, ela é suspensa até a Tarefa A enviar.
