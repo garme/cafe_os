@@ -33,7 +33,7 @@ naked void task_a() {
         unlock_sem();
     }
     // A Tarefa A terminou a sua missão!
-    exit_process();
+    exit();
 }
 
 naked void task_b() {
