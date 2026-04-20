@@ -1,47 +1,30 @@
-#include "ipc_sem.c"
+#include "usr_syscalls.c"
 
-int contador_a;
-int contador_b;
-
-// Usar naked e gerir o retorno manualmente!
-naked void print_space() {
-    asm("INT CLI_INT"); 
-
-    asm("SOP pop");
-    asm("STA tmp_lock_ret");
-
-    asm("MOV 32"); 
-    asm("INT OUT_INT");
-
-    asm("MOV 0");
-    asm("SOP push");
-    asm("LDA tmp_lock_ret");
-    asm("SOP push");
-
-    asm("INT TIMER_INT");
-    asm("RET");
-}
+int cont_a;
+int cont_b;
 
 naked void task_a() {
-    while(contador_a < 50) {
-        contador_a = contador_a + 1;
+    cont_a = 0;
+    while(cont_a < 10) {
+        cont_a = cont_a + 1;
         
-        lock_sem();
-        printint(contador_a);
+        sem_lock();
+        printint(cont_a);
         print_space();
-        unlock_sem();
+        sem_unlock();
     }
     // A Tarefa A terminou a sua missão!
     exit();
 }
 
 naked void task_b() {
+    cont_b = 0;
     while(1) {
-        contador_b = contador_b + 1;
+        cont_b = cont_b + 1;
         
-        lock_sem();
-        printint(contador_b);
+        sem_lock();
+        printint(cont_b);
         print_space();
-        unlock_sem();
+        sem_unlock();
     }
 }

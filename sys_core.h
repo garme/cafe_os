@@ -21,6 +21,7 @@ struct PCB_Struct {
     int sp;
     int ac;
     int priority;        // Quanto maior o número, maior a prioridade
+    int age;             // Guarda o age da tarefa (Escalonador Prioridade Dinâmica)
     int mem_base;        // Guarda o ponteiro original do malloc para o free()
     int waiting_for_pid; // Guarda o PID de um processo para uso com wait()
 };

@@ -7,8 +7,9 @@ int MUTEX_ZERO = 0;
 int MUTEX_STATE = 0;
 int tmp_lock_ret; // Usada em zonas estritamente protegidas (CLI)
 
-
+//----------------------------------------------------------------------
 // --- Utilitários de Acordar Processos ---
+//----------------------------------------------------------------------
 void wakeup_waiters(int dead_pid) {
     int i;
     i = 0;
@@ -34,8 +35,9 @@ void wakeup_all() {
     }
 }
 
-
-// --- 1. LÓGICA DO SEMÁFORO (BLOQUEIO) ---
+//----------------------------------------------------------------------
+// --- LÓGICA DO SEMÁFORO (BLOQUEIO) ---
+//----------------------------------------------------------------------
 void kernel_sem_lock() {
     if (SEM_STATE == 0) {
         SEM_STATE = 1; // Pega a tranca imediatamente
@@ -46,11 +48,39 @@ void kernel_sem_lock() {
 }
 
 void kernel_sem_unlock() {
-    SEM_STATE = 0;
-    wakeup_all(); // Acorda todos para que tentem pegar a tranca novamente
+    int i;
+    int acordou_alguem;
+    
+    acordou_alguem = 0;
+    i = 0;
+    
+    // Procura apenas UM processo que esteja à espera do semáforo
+    while(i < MAX_PROCESSES) {
+        if (pcb[i].state == STATE_BLOCKED) {
+            pcb[i].state = STATE_READY; // Acorda o processo
+            acordou_alguem = 1;         // Regista que encontrou alguém
+            
+            // Força a saída do laço para não acordar mais ninguém!
+            // No seu compilador, como não há 'break', forçamos o índice:
+            i = MAX_PROCESSES; 
+        } else {
+            i = i + 1;
+        }
+    }
+    
+    // Se a fila de espera estava vazia, destrancamos a porta de facto.
+    if (acordou_alguem == 0) {
+        SEM_STATE = 0;
+    }
+    
+    // Nota: Se 'acordou_alguem' for 1, a variável SEM_STATE continua 
+    // a valer 1. O Kernel acabou de transferir a posse da tranca 
+    // diretamente para a tarefa que foi acordada!
 }
 
-// --- 2. LÓGICA DO MUTEX / SPINLOCK (ESPERA OCUPADA) ---
+//----------------------------------------------------------------------
+// --- LÓGICA DO MUTEX / SPINLOCK (ESPERA OCUPADA) ---
+//----------------------------------------------------------------------
 int kernel_mutex_trylock() {
     // Apenas testa a tranca e responde. Não altera o estado do PCB!
     if (MUTEX_STATE == 0) {
@@ -64,7 +94,9 @@ void kernel_mutex_unlock() {
     MUTEX_STATE = 0;
 }
 
+//----------------------------------------------------------------------
 // --- Handlers das Chamadas de Sistema ---
+//----------------------------------------------------------------------
 void kernel_exit() {
     pcb[current_pid].state = STATE_TERMINATED;
     free(pcb[current_pid].mem_base); 
@@ -86,32 +118,14 @@ void kernel_wait(int target_pid) {
     }
 }
 
-int kernel_lock_sem() {
-    if (SEM_STATE == 0) {
-        SEM_STATE = 1; // Ocupa a tranca
-        return 1;      // Diz ao User Space: Sucesso!
-    } else {
-        pcb[current_pid].state = STATE_BLOCKED;
-        return 0;      // Diz ao User Space: Bloqueado (Tenta novamente mais tarde)
-    }
-}
-
-void kernel_unlock_sem() {
-    SEM_STATE = 0;
-    wakeup_all(); // Acorda todos para disputarem a tranca
-}
-
-void kernel_print_space() {
-    // O Kernel tem privilégios para falar com o hardware (OUT_INT)
-    asm("MOV 32"); 
-    asm("INT OUT_INT");
-}
-
+//----------------------------------------------------------------------
 // --- Criação do Processo ---
+//----------------------------------------------------------------------
 void create_process(int pid, int task_addr, int stack_base, int priority, int mem_base) {
     pcb[pid].state = STATE_READY;
     pcb[pid].ac = 0;
-    pcb[pid].priority = priority; 
+    pcb[pid].priority = priority;
+    pcb[pid].age = 0;
     pcb[pid].mem_base = mem_base;
     pcb[pid].waiting_for_pid = -1;
     
@@ -128,8 +142,9 @@ void create_process(int pid, int task_addr, int stack_base, int priority, int me
     pcb[pid].sp = stack_base - 9;   
 }
 
+//----------------------------------------------------------------------
 // --- Funções de I/O (Ring 0) ---
-
+//----------------------------------------------------------------------
 void kernel_print_char(int ascii_code) {
     asm("MOV 0");
     asm("ADD kernel_print_char_ascii_code");
@@ -142,4 +157,10 @@ int kernel_read_char() {
     asm("INT IN_INT");
     asm("STA isr_tmp_ac"); 
     return isr_tmp_ac;
+}
+
+void kernel_print_space() {
+    // O Kernel tem privilégios para falar com o hardware (OUT_INT)
+    asm("MOV 32"); 
+    asm("INT OUT_INT");
 }

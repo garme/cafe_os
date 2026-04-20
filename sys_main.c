@@ -1,13 +1,13 @@
 #include "sys_core.h"
 
 // ESCOLHA O SEU ESCALONADOR AQUI (Comente um e descomente o outro)
-#include "sys_sched_fp.c"    // Prioridade Fixa
-// #include "sys_sched_rr.c" // Round-Robin
+//#include "sys_sched_fp.c"    // Prioridade Fixa
+#include "sys_sched_dp.c"    // Round-Robin
 
 #include "sys_mem.c"         
 #include "sys_ipc.c"
 
-#include "usr_tasks_5.c"
+#include "usr_tasks_2.c"
 
 //Globais temporárias par AC e SP
 int isr_tmp_ac;   
@@ -204,7 +204,7 @@ void main() {
     mem_b = malloc(100);
     
     // create_process(PID, Função, Base_Pilha, Prioridade, Pont_Memoria)
-    create_process(0, addr_task_a, mem_a + 100, 10, mem_a); // <--- Alta Prioridade
+    create_process(0, addr_task_a, mem_a + 100, 5, mem_a); // <--- Alta Prioridade
     create_process(1, addr_task_b, mem_b + 100, 5, mem_b);  // <--- Baixa Prioridade
     
     current_pid = 0;

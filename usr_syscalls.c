@@ -5,7 +5,6 @@
 int sys_ret_val;
 
 // --- GESTÃO DE CICLO DE VIDA DE TAREFAS ---
-
 void yield() {
     asm("MOV 0"); asm("SOP push"); asm("MOV 9"); asm("SOP push");
     asm("INT SYSCALL_INT");
@@ -59,7 +58,6 @@ void mutex_unlock() {
     asm("MOV 0"); asm("SOP push"); asm("MOV 8"); asm("SOP push");
     asm("INT SYSCALL_INT");
 }
-
 
 void mutex_lock() {
     // Implementação clássica de Spinlock! 
