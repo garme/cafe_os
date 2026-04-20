@@ -18,7 +18,7 @@ naked void task_a() {
         cont_a = cont_a + 1;
         sem_lock(); printint(cont_a); print_space(); sem_unlock();
     }
-    exit(); 
+    exit();
 }
 
 naked void task_b() {

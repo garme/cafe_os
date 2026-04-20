@@ -1,4 +1,3 @@
-#include <printint>
 #include "ipc_mutex.c"
 
 int contador_a;

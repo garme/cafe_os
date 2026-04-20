@@ -2,89 +2,91 @@
 // usr_syscalls.c - Biblioteca de User Space (Ring 1)
 // =======================================================
 
+int sys_ret_val;
+
 // --- GESTÃO DE CICLO DE VIDA DE TAREFAS ---
-void exit() {
-    asm("MOV 0"); asm("SOP push"); 
-    asm("MOV 1"); asm("SOP push");
+
+void yield() {
+    asm("MOV 0"); asm("SOP push"); asm("MOV 9"); asm("SOP push");
     asm("INT SYSCALL_INT");
-    asm("RET");
+}
+
+void exit() {
+    asm("MOV 0"); asm("SOP push"); asm("MOV 1"); asm("SOP push");
+    asm("INT SYSCALL_INT");
+    
+    while(1) { 
+        yield(); // Cede a CPU pacífica e infinitamente
+    }
 }
 
 void wait(int pid) {
-    asm("LDA wait_pid"); asm("SOP push"); 
-    asm("MOV 2"); asm("SOP push");
+    asm("LDA wait_pid"); asm("SOP push"); asm("MOV 2"); asm("SOP push");
     asm("INT SYSCALL_INT");
-    asm("RET");
 }
 
 void kill(int pid) {
-    asm("LDA kill_pid"); asm("SOP push"); 
-    asm("MOV 3"); asm("SOP push");
+    asm("LDA kill_pid"); asm("SOP push"); asm("MOV 3"); asm("SOP push");
     asm("INT SYSCALL_INT");
-    asm("RET");
 }
 
 //  --- SEMÁFORO (BLOQUEIO DE TAREFA) ---
 void sem_lock() {
-    asm("MOV 0"); asm("SOP push"); 
-    asm("MOV 4"); asm("SOP push"); // ID 4
+    asm("MOV 0"); asm("SOP push"); asm("MOV 4"); asm("SOP push");
     asm("INT SYSCALL_INT");
-    asm("RET");
-    // Quando esta instrução retornar, a tarefa JÁ TEM a tranca!
 }
 
 void sem_unlock() {
-    asm("MOV 0"); asm("SOP push"); 
-    asm("MOV 5"); asm("SOP push"); // ID 5
+    asm("MOV 0"); asm("SOP push"); asm("MOV 5"); asm("SOP push");
     asm("INT SYSCALL_INT");
-    asm("RET");
 }
 
+
 // --- MUTEX (SPINLOCK / ESPERA OCUPADA) ---
-naked int sys_mutex_trylock() {
-    asm("MOV 0"); asm("SOP push"); asm("MOV 7"); asm("SOP push"); // ID 7
+int sys_mutex_trylock() {
+    asm("MOV 0"); asm("SOP push"); asm("MOV 7"); asm("SOP push");
     asm("INT SYSCALL_INT");
-    asm("SOP push");
-    asm("RET");
+    
+    // 1. O IRET do Kernel preservou a resposta no Acumulador (AC).
+    // 2. Guardamos numa variável em vez de empilhar!
+    asm("STA sys_ret_val"); 
+    
+    // 3. Devolvemos a variável e o Compilador C cuida da pilha!
+    return sys_ret_val;
 }
 
 void mutex_unlock() {
-    asm("MOV 0"); asm("SOP push"); asm("MOV 8"); asm("SOP push"); // ID 8
+    asm("MOV 0"); asm("SOP push"); asm("MOV 8"); asm("SOP push");
     asm("INT SYSCALL_INT");
-    asm("RET");
 }
 
-void yield() {
-    // Pede ao SO para passar a vez prematuramente
-    asm("MOV 0"); asm("SOP push"); asm("MOV 9"); asm("SOP push"); // ID 9
-    asm("INT SYSCALL_INT");
-    asm("RET");
-}
 
 void mutex_lock() {
     // Implementação clássica de Spinlock! 
     while (sys_mutex_trylock() == 0) {
-        yield(); // Sem o yield, este while derreteria o "processador"
+        yield(); 
     }
 }
 
 // --- I/O e Periféricos ---
 void print_char(int ascii) {
-    asm("LDA print_char_ascii"); asm("SOP push");
-    asm("MOV 10"); asm("SOP push");
+    // O C chama ao argumento 'print_char_ascii'
+    asm("LDA print_char_ascii"); asm("SOP push"); 
+    asm("MOV 10"); asm("SOP push"); 
     asm("INT SYSCALL_INT");
 }
 
-naked int read_char() {
-    asm("MOV 0"); asm("SOP push");
-    asm("MOV 11"); asm("SOP push");
+int read_char() {
+    asm("MOV 0"); asm("SOP push"); asm("MOV 11"); asm("SOP push"); 
     asm("INT SYSCALL_INT");
-    asm("SOP push"); // O Kernel devolve o caractere lido no AC
-    asm("RET");
+    
+    // Captura o caractere devolvido no AC
+    asm("STA sys_ret_val");
+    return sys_ret_val;
 }
 
 void print_space() {
-    print_char(32); // Muito mais limpo agora!
+    print_char(32); 
 }
 
 // =======================================================

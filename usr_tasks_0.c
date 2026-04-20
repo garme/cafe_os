@@ -1,4 +1,3 @@
-#include <printint>
 
 int contador_a;
 int contador_b;

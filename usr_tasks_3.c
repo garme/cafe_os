@@ -1,4 +1,3 @@
-#include <printint>
 #include "ipc_sem.c"
 
 int contador_a;
