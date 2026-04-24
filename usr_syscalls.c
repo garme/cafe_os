@@ -6,12 +6,12 @@ int sys_ret_val;
 
 // --- GESTÃO DE CICLO DE VIDA DE TAREFAS ---
 void yield() {
-    asm("MOV 0"); asm("SOP push"); asm("MOV 9"); asm("SOP push");
+    asm("MOV 0"); asm("SOP PUSH_OP"); asm("MOV 9"); asm("SOP PUSH_OP");
     asm("INT SYSCALL_INT");
 }
 
 void exit() {
-    asm("MOV 0"); asm("SOP push"); asm("MOV 1"); asm("SOP push");
+    asm("MOV 0"); asm("SOP PUSH_OP"); asm("MOV 1"); asm("SOP PUSH_OP");
     asm("INT SYSCALL_INT");
     
     while(1) { 
@@ -20,30 +20,50 @@ void exit() {
 }
 
 void wait(int pid) {
-    asm("LDA wait_pid"); asm("SOP push"); asm("MOV 2"); asm("SOP push");
+    asm("LDA wait_pid"); asm("SOP PUSH_OP"); asm("MOV 2"); asm("SOP PUSH_OP");
     asm("INT SYSCALL_INT");
 }
 
-void kill(int pid) {
-    asm("LDA kill_pid"); asm("SOP push"); asm("MOV 3"); asm("SOP push");
+void kill(int pid, int signal) {
+    // Empilha o sinal e depois o PID. O handler no Kernel precisará extrair os dois!
+    asm("LDA kill_signal"); asm("SOP PUSH_OP"); 
+    asm("LDA kill_pid"); asm("SOP PUSH_OP"); 
+    asm("MOV 3"); asm("SOP PUSH_OP");
     asm("INT SYSCALL_INT");
 }
+
+
+void sleep(int ticks) {
+    asm("LDA sleep_ticks"); asm("SOP PUSH_OP"); asm("MOV 12"); asm("SOP PUSH_OP");
+    asm("INT SYSCALL_INT");
+}
+
+void alarm(int ticks) {
+    asm("LDA alarm_ticks"); asm("SOP PUSH_OP"); asm("MOV 13"); asm("SOP PUSH_OP");
+    asm("INT SYSCALL_INT");
+}
+
+void pause() {
+    asm("MOV 0"); asm("SOP PUSH_OP"); asm("MOV 14"); asm("SOP PUSH_OP");
+    asm("INT SYSCALL_INT");
+}
+
 
 //  --- SEMÁFORO (BLOQUEIO DE TAREFA) ---
 void sem_lock() {
-    asm("MOV 0"); asm("SOP push"); asm("MOV 4"); asm("SOP push");
+    asm("MOV 0"); asm("SOP PUSH_OP"); asm("MOV 4"); asm("SOP PUSH_OP");
     asm("INT SYSCALL_INT");
 }
 
 void sem_unlock() {
-    asm("MOV 0"); asm("SOP push"); asm("MOV 5"); asm("SOP push");
+    asm("MOV 0"); asm("SOP PUSH_OP"); asm("MOV 5"); asm("SOP PUSH_OP");
     asm("INT SYSCALL_INT");
 }
 
 
 // --- MUTEX (SPINLOCK / ESPERA OCUPADA) ---
 int sys_mutex_trylock() {
-    asm("MOV 0"); asm("SOP push"); asm("MOV 7"); asm("SOP push");
+    asm("MOV 0"); asm("SOP PUSH_OP"); asm("MOV 7"); asm("SOP PUSH_OP");
     asm("INT SYSCALL_INT");
     
     // 1. O IRET do Kernel preservou a resposta no Acumulador (AC).
@@ -55,7 +75,7 @@ int sys_mutex_trylock() {
 }
 
 void mutex_unlock() {
-    asm("MOV 0"); asm("SOP push"); asm("MOV 8"); asm("SOP push");
+    asm("MOV 0"); asm("SOP PUSH_OP"); asm("MOV 8"); asm("SOP PUSH_OP");
     asm("INT SYSCALL_INT");
 }
 
@@ -69,13 +89,13 @@ void mutex_lock() {
 // --- I/O e Periféricos ---
 void print_char(int ascii) {
     // O C chama ao argumento 'print_char_ascii'
-    asm("LDA print_char_ascii"); asm("SOP push"); 
-    asm("MOV 10"); asm("SOP push"); 
+    asm("LDA print_char_ascii"); asm("SOP PUSH_OP"); 
+    asm("MOV 10"); asm("SOP PUSH_OP"); 
     asm("INT SYSCALL_INT");
 }
 
 int read_char() {
-    asm("MOV 0"); asm("SOP push"); asm("MOV 11"); asm("SOP push"); 
+    asm("MOV 0"); asm("SOP PUSH_OP"); asm("MOV 11"); asm("SOP PUSH_OP"); 
     asm("INT SYSCALL_INT");
     
     // Captura o caractere devolvido no AC
@@ -83,8 +103,28 @@ int read_char() {
     return sys_ret_val;
 }
 
-void print_space() {
-    print_char(32); 
+
+// =======================================================
+// BIBLIOTECA TRATAMENTO DE SINAIS
+// =======================================================
+void signal(int handler_addr) {
+    asm("LDA signal_handler_addr"); asm("SOP PUSH_OP");
+    asm("MOV 15"); asm("SOP PUSH_OP");
+    asm("INT SYSCALL_INT");
+}
+
+void sigreturn() {
+    asm("MOV 0"); asm("SOP PUSH_OP");
+    asm("MOV 16"); asm("SOP PUSH_OP");
+    asm("INT SYSCALL_INT");
+}
+
+int get_signal() {
+     asm("MOV 0"); asm("SOP PUSH_OP");
+     asm("MOV 17"); asm("SOP PUSH_OP");
+     asm("INT SYSCALL_INT");
+     asm("STA sys_ret_val");
+     return sys_ret_val;
 }
 
 // =======================================================

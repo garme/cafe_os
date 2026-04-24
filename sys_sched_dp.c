@@ -9,7 +9,7 @@ void schedule() {
     int any_alive;
     int effective_priority;
 
-    // 1. Despromove o processo atual e zera a sua idade (pois ele acabou de rodar)
+    // 1. Despromove o processo atual
     if (pcb[current_pid].state == STATE_RUNNING) {
         pcb[current_pid].state = STATE_READY;
         pcb[current_pid].age = 0; 
@@ -32,17 +32,14 @@ void schedule() {
     }
     
     // 3. Envelhecimento (Aging) e Busca
-    highest_priority = -1;
-    next_pid = -1; 
+    highest_priority = 0; // <--- CORREÇÃO: Começa em 0 para evitar o bug de 16-bits (65535)
+    next_pid = current_pid; // <--- CORREÇÃO: Fallback seguro. Se ninguém ganhar, mantém o atual.
     
     i = 0;
     while (i < MAX_PROCESSES) {
         if (pcb[i].state == STATE_READY) {
             
-            // A tarefa está esperando, então fica mais "velha"
             pcb[i].age = pcb[i].age + 1;
-            
-            // Calcula a prioridade para este exato momento
             effective_priority = pcb[i].priority + pcb[i].age;
             
             if (effective_priority > highest_priority) {
@@ -53,21 +50,12 @@ void schedule() {
         i = i + 1;
     }
     
-    // 4. Promove o processo vencedor para a CPU
-    if (next_pid != -1) {
-        current_pid = next_pid;
-        pcb[current_pid].state = STATE_RUNNING;
-        
-        // A tarefa ganhou a CPU! A fome acabou, a idade volta a zero.
-        pcb[current_pid].age = 0;
-        
-        if (pcb[current_pid].state == STATE_TERMINATED) {
-            asm("INT CLI_INT");
-            asm("INT HALT_INT");
-        }
-        return;
-    }
-    else {
+    // 4. Promove o processo vencedor
+    current_pid = next_pid;
+    pcb[current_pid].state = STATE_RUNNING;
+    pcb[current_pid].age = 0;
+    
+    if (pcb[current_pid].state == STATE_TERMINATED) {
         asm("INT CLI_INT");
         asm("INT HALT_INT");
     }

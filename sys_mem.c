@@ -3,10 +3,10 @@
 // =======================================================
 
 // Força o compilador a reservar 1000 posições de memória
-int os_heap[1000];
+int os_heap[250];
 
 int HEAP_START;
-int HEAP_SIZE  = 1000;  // Tamanho total do Heap
+int HEAP_SIZE  = 250;  // Tamanho total do Heap
 
 // Inicializa o grande bloco de memória livre
 void init_heap() {

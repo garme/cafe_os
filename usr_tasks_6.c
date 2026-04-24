@@ -10,7 +10,7 @@ naked void task_a() {
 
         sem_lock(); 
         printint(cont_a); 
-        print_space(); 
+        printstr(" ");
         sem_unlock();
     }
 }
@@ -21,12 +21,12 @@ naked void task_b() {
         cont_b = cont_b + 1;
         sem_lock(); 
         printint(cont_b); 
-        print_space(); 
+        printstr(" ");
         sem_unlock();
     }
     
     // Mata a Tarefa A antes de sair.
-    kill(0);
+    kill(0, SIGKILL);
     printint(0);
     exit();
 }

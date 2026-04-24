@@ -2,12 +2,13 @@
 
 // ESCOLHA O SEU ESCALONADOR AQUI (Comente um e descomente o outro)
 //#include "sys_sched_fp.c"    // Prioridade Fixa
-#include "sys_sched_dp.c"    // Round-Robin
+//#include "sys_sched_rr.c"    // Round-Robin
+#include "sys_sched_dp.c"    // Aging
 
 #include "sys_mem.c"         
 #include "sys_ipc.c"
 
-#include "usr_tasks_2.c"
+#include "usr_tasks_6.c"
 
 //Globais temporárias par AC e SP
 int isr_tmp_ac;   
@@ -18,6 +19,7 @@ int tmp_sys_flags;
 int tmp_sys_pc;
 int tmp_sys_id;
 int tmp_sys_arg;
+int tmp_sys_arg2;
 
 //Globais endereços de memória das tasks
 int addr_task_a;
@@ -42,9 +44,9 @@ void main() {
     // =======================================================
     asm("kernel_fault_handler:");
     asm("INT CLI_INT");
-    asm("SOP pop"); // Descarta Flags antigas
-    asm("SOP pop"); // Descarta PC corrompido/malicioso
-    kernel_kill(current_pid); // Mata o processo infrator!
+    asm("SOP POP_OP"); // Descarta Flags antigas
+    asm("SOP POP_OP"); // Descarta PC corrompido/malicioso
+    kernel_kill(current_pid, SIGKILL); // Mata o processo infrator!
     schedule(); // Elege um novo processo
     asm("JMP dispatcher_restore_context");
     
@@ -56,24 +58,29 @@ void main() {
     asm("STA isr_tmp_ac"); // Preserva o acumulador sujo pelo processo
 
     // 1. Extração Cirúrgica: Tira Flags, PC, ID e Arg do topo da pilha do utilizador
-    asm("SOP pop"); asm("STA tmp_sys_flags");
-    asm("SOP pop"); asm("STA tmp_sys_pc");
-    asm("SOP pop"); asm("STA tmp_sys_id");
-    asm("SOP pop"); asm("STA tmp_sys_arg");
+    asm("SOP POP_OP"); asm("STA tmp_sys_flags");
+    asm("SOP POP_OP"); asm("STA tmp_sys_pc");
+    asm("SOP POP_OP"); asm("STA tmp_sys_id");
+    asm("SOP POP_OP"); asm("STA tmp_sys_arg");
+    
+    // Extrai mais um arg da pilha, se for a syscall kill (ID 3)
+    if (tmp_sys_id == 3) {
+        asm("SOP POP_OP"); asm("STA tmp_sys_arg2"); 
+    }
 
     // 2. Reconstrução: Devolve o PC e as Flags originais para o topo
     // (Isto deixa a pilha perfeita para quando o IRET_INT precisar de a restaurar)
-    asm("LDA tmp_sys_pc");  asm("SOP push");
-    asm("LDA tmp_sys_flags"); asm("SOP push");
+    asm("LDA tmp_sys_pc");  asm("SOP PUSH_OP");
+    asm("LDA tmp_sys_flags"); asm("SOP PUSH_OP");
 
     // 3. Salva os registos temporários do compilador na pilha (Idêntico ao Dispatcher)
-    asm("LDA tmp_ptr"); asm("SOP push");
-    asm("LDA tmp_idx"); asm("SOP push");
-    asm("LDA tmp_lhs"); asm("SOP push");
-    asm("LDA tmp_val"); asm("SOP push");
-    asm("LDA tmp_left_cond"); asm("SOP push");
-    asm("LDA tmp_left"); asm("SOP push");
-    asm("LDA tmp_right"); asm("SOP push");
+    asm("LDA tmp_ptr"); asm("SOP PUSH_OP");
+    asm("LDA tmp_idx"); asm("SOP PUSH_OP");
+    asm("LDA tmp_lhs"); asm("SOP PUSH_OP");
+    asm("LDA tmp_val"); asm("SOP PUSH_OP");
+    asm("LDA tmp_left_cond"); asm("SOP PUSH_OP");
+    asm("LDA tmp_left"); asm("SOP PUSH_OP");
+    asm("LDA tmp_right"); asm("SOP PUSH_OP");
 
     // 4. Guarda o ponteiro da pilha final no PCB
     asm("MOV $SP");         
@@ -81,6 +88,33 @@ void main() {
 
     pcb[current_pid].ac = isr_tmp_ac;
     pcb[current_pid].sp = isr_tmp_sp;
+
+    // --- LÓGICA DE TEMPO E SINAIS ---
+    system_ticks = system_ticks + 1;
+
+    int i;
+    i = 0;
+    while(i < MAX_PROCESSES) {
+        if (pcb[i].state != STATE_TERMINATED) {
+            
+            // 1. Verifica os processos em SLEEP
+            if (pcb[i].state == STATE_SLEEPING) {
+                if (system_ticks >= pcb[i].wakeup_tick) {
+                    pcb[i].state = STATE_READY; // Acorda!
+                }
+            }
+
+            // 2. Verifica os ALARMES
+            if (pcb[i].alarm_tick > 0) {
+                if (system_ticks >= pcb[i].alarm_tick) {
+                    pcb[i].pending_signal = SIGALRM; // Entrega o sinal
+                    pcb[i].alarm_tick = 0;           // Desarma o alarme
+                }
+            }
+        }
+        i = i + 1;
+    }
+    // -------------------------------------
 
     // =================================================================
     // Agora estamos 100% seguros em Kernel Space!
@@ -92,7 +126,7 @@ void main() {
         kernel_wait(tmp_sys_arg);
     }
     if (tmp_sys_id == 3) {
-        kernel_kill(tmp_sys_arg);
+        kernel_kill(tmp_sys_arg, tmp_sys_arg2);
     }
     // IDs 4 e 5: Semáforo (Bloqueio)
     if (tmp_sys_id == 4) {
@@ -101,8 +135,9 @@ void main() {
     if (tmp_sys_id == 5) {
         kernel_sem_unlock();
     }
+    // RESERVADO
     if (tmp_sys_id == 6) {
-        kernel_print_space();
+        
     }
     // IDs 7 e 8: Mutex (Spinlock)
     if (tmp_sys_id == 7) {
@@ -124,9 +159,32 @@ void main() {
     if (tmp_sys_id == 11) {
         isr_tmp_ac = kernel_read_char(); // Retorna o valor lido para a tarefa!
     }
+    // ID 12: Por a tarefa para dormir
+    if (tmp_sys_id == 12) {
+        kernel_sleep(tmp_sys_arg);
+    }
+    // ID 13: Configurar um alarme para acordar a tarefa
+    if (tmp_sys_id == 13) {
+        kernel_alarm(tmp_sys_arg);
+    }
+    // ID 14: Pausar a tarefa
+    if (tmp_sys_id == 14) {
+        kernel_pause();
+    }
+    // IDs 15, 16, 17: Tratamento de Sinais
+    if (tmp_sys_id == 15) {
+        kernel_signal(tmp_sys_arg);
+    }
+    if (tmp_sys_id == 16) {
+        kernel_sigreturn(); // Aqui ocorre a sobreposição de tmp_sys_pc!
+    }
+    if (tmp_sys_id == 17) {
+        isr_tmp_ac = kernel_get_signal();
+    }
 
     // 6. Resolução da Syscall: Força o escalonador a atuar e salta para o fluxo de restauro
     schedule(); 
+    
     asm("JMP dispatcher_restore_context");
     
     // =======================================================
@@ -135,13 +193,13 @@ void main() {
     asm("kernel_dispatcher:");
     asm("INT CLI_INT");
     asm("STA isr_tmp_ac");       
-    asm("LDA tmp_ptr"); asm("SOP push");
-    asm("LDA tmp_idx"); asm("SOP push");
-    asm("LDA tmp_lhs"); asm("SOP push");
-    asm("LDA tmp_val"); asm("SOP push");
-    asm("LDA tmp_left_cond"); asm("SOP push");
-    asm("LDA tmp_left"); asm("SOP push");
-    asm("LDA tmp_right"); asm("SOP push");
+    asm("LDA tmp_ptr"); asm("SOP PUSH_OP");
+    asm("LDA tmp_idx"); asm("SOP PUSH_OP");
+    asm("LDA tmp_lhs"); asm("SOP PUSH_OP");
+    asm("LDA tmp_val"); asm("SOP PUSH_OP");
+    asm("LDA tmp_left_cond"); asm("SOP PUSH_OP");
+    asm("LDA tmp_left"); asm("SOP PUSH_OP");
+    asm("LDA tmp_right"); asm("SOP PUSH_OP");
     asm("MOV $SP");         
     asm("STA isr_tmp_sp");
     
@@ -153,6 +211,32 @@ void main() {
     
     // Rótulo de reentrada (Aproveitado pelo Fault e Syscall se precisarem)
     asm("dispatcher_restore_context:");
+    
+    // =================================================================
+    // STACK SPOOFING (A MÁGICA DOS SINAIS)
+    // O PC original está salvo na RAM, na posição (SP + 8).
+    // Se houver um sinal, nós alteramos o endereço na memória cirurgicamente!
+    // =================================================================
+    int target_sp;
+    target_sp = pcb[current_pid].sp;
+
+    if (pcb[current_pid].pending_signal > 0) {
+        if (pcb[current_pid].signal_handler != 0) {
+            if (pcb[current_pid].in_signal == 0) {
+                // 1. Salva o PC original (que ia continuar a execução normal)
+                pcb[current_pid].saved_pc = ram[target_sp + 8];
+                
+                // 2. Falsifica a pilha injetando o endereço do Handler
+                ram[target_sp + 8] = pcb[current_pid].signal_handler;
+                
+                // 3. Tranca para não entrar em loop recursivo
+                pcb[current_pid].in_signal = 1;
+            }
+        }
+    }
+    // =================================================================
+
+    // Restaura o contexto do processo eleito
 
     // Restaura o contexto do processo eleito
     isr_tmp_sp = pcb[current_pid].sp;
@@ -161,13 +245,13 @@ void main() {
     asm("LDA isr_tmp_sp");
     asm("MOV -$SP");             
     
-    asm("SOP pop"); asm("STA tmp_right");
-    asm("SOP pop"); asm("STA tmp_left");
-    asm("SOP pop"); asm("STA tmp_left_cond");
-    asm("SOP pop"); asm("STA tmp_val");
-    asm("SOP pop"); asm("STA tmp_lhs");
-    asm("SOP pop"); asm("STA tmp_idx");
-    asm("SOP pop"); asm("STA tmp_ptr");
+    asm("SOP POP_OP"); asm("STA tmp_right");
+    asm("SOP POP_OP"); asm("STA tmp_left");
+    asm("SOP POP_OP"); asm("STA tmp_left_cond");
+    asm("SOP POP_OP"); asm("STA tmp_val");
+    asm("SOP POP_OP"); asm("STA tmp_lhs");
+    asm("SOP POP_OP"); asm("STA tmp_idx");
+    asm("SOP POP_OP"); asm("STA tmp_ptr");
 
     asm("LDA isr_tmp_ac");       
     asm("INT IRET_INT");         
@@ -179,7 +263,6 @@ void main() {
     asm("INT CLI_INT");
     
     // Limpa PCB
-    int i;
     for(i=0; i<MAX_PROCESSES; i++) { pcb[i].state = STATE_TERMINATED; }
     
     // --- DESBLOQUEIO DE HARDWARE (SEGMENTO DE PILHA) ---
@@ -204,8 +287,8 @@ void main() {
     mem_b = malloc(100);
     
     // create_process(PID, Função, Base_Pilha, Prioridade, Pont_Memoria)
-    create_process(0, addr_task_a, mem_a + 100, 5, mem_a); // <--- Alta Prioridade
-    create_process(1, addr_task_b, mem_b + 100, 5, mem_b);  // <--- Baixa Prioridade
+    create_process(0, addr_task_a, mem_a + 100, 4, mem_a); // <--- Alta Prioridade
+    create_process(1, addr_task_b, mem_b + 100, 3, mem_b);  // <--- Baixa Prioridade
     
     current_pid = 0;
     pcb[0].state = STATE_RUNNING;
@@ -216,13 +299,13 @@ void main() {
     asm("LDA isr_tmp_sp");
     asm("MOV -$SP");             
 
-    asm("SOP pop"); asm("STA tmp_right");
-    asm("SOP pop"); asm("STA tmp_left");
-    asm("SOP pop"); asm("STA tmp_left_cond");
-    asm("SOP pop"); asm("STA tmp_val");
-    asm("SOP pop"); asm("STA tmp_lhs");
-    asm("SOP pop"); asm("STA tmp_idx");
-    asm("SOP pop"); asm("STA tmp_ptr");
+    asm("SOP POP_OP"); asm("STA tmp_right");
+    asm("SOP POP_OP"); asm("STA tmp_left");
+    asm("SOP POP_OP"); asm("STA tmp_left_cond");
+    asm("SOP POP_OP"); asm("STA tmp_val");
+    asm("SOP POP_OP"); asm("STA tmp_lhs");
+    asm("SOP POP_OP"); asm("STA tmp_idx");
+    asm("SOP POP_OP"); asm("STA tmp_ptr");
 
     asm("LDA isr_tmp_ac");       
     asm("INT IRET_INT");         
