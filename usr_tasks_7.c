@@ -73,8 +73,7 @@ naked void task_b() {
     sem_unlock();
     kill(0, SIGKILL);
     
-    sem_lock();
     printstr("H");
-    sem_unlock();
+
     exit();
 }
