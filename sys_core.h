@@ -48,6 +48,18 @@ struct PCB_Struct {
     int signal_handler;  // Endereço da função do usuário (Ring 1)
     int saved_pc;        // Guarda o PC original (Para onde o processo ia)
     int in_signal;       // Flag para impedir que um sinal interrompa outro sinal
+    
+    // --- CONTEXTO SALVO PARA SINAIS ---
+    int sig_saved_sp;
+    int sig_saved_ac;
+    int sig_saved_ptr;
+    int sig_saved_idx;
+    int sig_saved_lhs;
+    int sig_saved_val;
+    int sig_saved_left_cond;
+    int sig_saved_left;
+    int sig_saved_right;
+    int sig_saved_flags;
 };
 
 int MAX_PROCESSES = 2;
@@ -57,6 +69,7 @@ struct PCB_Struct pcb[2];
 
 // Variáveis de Controle
 int current_pid;
+struct PCB_Struct *curr_pcb;    //Cache da PCB
 int *ram;
 
 

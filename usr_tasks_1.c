@@ -8,7 +8,7 @@ naked void task_a() {
     while(1) {
         cont_a = cont_a + 1;
         printint(cont_a);
-        print_space();
+        printstr(" ");
     }
 }
 
@@ -17,6 +17,6 @@ naked void task_b() {
     while(1) {
         cont_b = cont_b + 1;
         printint(cont_b);
-        print_space();
+        printstr(" ");
     }
 }

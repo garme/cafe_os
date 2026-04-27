@@ -9,7 +9,7 @@ naked void task_a() {
         cont_a = cont_a + 1;
         sem_lock(); 
         printint(cont_a); 
-        print_space(); 
+        printstr(" "); 
         sem_unlock();
     }
     
@@ -20,7 +20,7 @@ naked void task_a() {
         cont_a = cont_a + 1;
         sem_lock(); 
         printint(cont_a); 
-        print_space(); 
+        printstr(" ");
         sem_unlock();
     }
     exit();
@@ -32,7 +32,7 @@ naked void task_b() {
         cont_b = cont_b + 1;
         sem_lock(); 
         printint(cont_b); 
-        print_space(); 
+        printstr(" "); 
         sem_unlock();
     }
     // Quando a Tarefa B chamar exit(), o Kernel vai acordar a Tarefa A!

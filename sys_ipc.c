@@ -2,22 +2,26 @@
 // sys_ipc.c - Lógica de Retaguarda do Kernel (Ring 0)
 // =======================================================
 
+// --- VARIÁVEIS DE CONTEXTO PARA SINCRONIZAÇÂO ---
 int SEM_STATE = 0; // 0 = Livre, 1 = Ocupado
 int MUTEX_ZERO = 0;
 int MUTEX_STATE = 0;
 int tmp_lock_ret; // Usada em zonas estritamente protegidas (CLI)
+
 
 //----------------------------------------------------------------------
 // --- Utilitários de Acordar Processos ---
 //----------------------------------------------------------------------
 void wakeup_waiters(int dead_pid) {
     int i;
+    struct PCB_Struct *p;
     i = 0;
     while(i < MAX_PROCESSES) {
-        if (pcb[i].state == STATE_WAITING) {
-            if (pcb[i].waiting_for_pid == dead_pid) {
-                pcb[i].state = STATE_READY;
-                pcb[i].waiting_for_pid = -1;
+        p = &pcb[i]; // Cache no laço
+        if (p->state == STATE_WAITING) {
+            if (p->waiting_for_pid == dead_pid) {
+                p->state = STATE_READY;
+                p->waiting_for_pid = -1;
             }
         }
         i = i + 1;
@@ -98,43 +102,40 @@ void kernel_mutex_unlock() {
 // --- Handlers das Chamadas de Sistema ---
 //----------------------------------------------------------------------
 void kernel_exit() {
-    pcb[current_pid].state = STATE_TERMINATED;
-    free(pcb[current_pid].mem_base); 
+    curr_pcb->state = STATE_TERMINATED;
+    free(curr_pcb->mem_base); 
     wakeup_waiters(current_pid);     
 }
 
 void kernel_wait(int target_pid) {
     if (pcb[target_pid].state != STATE_TERMINATED) {
-        pcb[current_pid].state = STATE_WAITING;
-        pcb[current_pid].waiting_for_pid = target_pid;
+        curr_pcb->state = STATE_WAITING;
+        curr_pcb->waiting_for_pid = target_pid;
     }
 }
 
 // Syscall: kill(pid, sinal)
 void kernel_kill(int target_pid, int signal) {
-    if (pcb[target_pid].state != STATE_TERMINATED) {
-        
+    struct PCB_Struct *target;
+    target = &pcb[target_pid]; // Faz a conta APENAS UMA VEZ
+    
+    if (target->state != STATE_TERMINATED) {
         if (signal == SIGKILL) {
-            // Comportamento antigo: Mata impiedosamente
-            pcb[target_pid].state = STATE_TERMINATED;
-            free(pcb[target_pid].mem_base);  
+            target->state = STATE_TERMINATED;
+            free(target->mem_base);  
             wakeup_waiters(target_pid);
         } else {
-            // Apenas entrega a carta (o sinal) na caixa de correio
-            pcb[target_pid].pending_signal = signal;
-            
-            // Se o processo estava PAUSED esperando um sinal, acorda ele!
-            if (pcb[target_pid].state == STATE_PAUSED) {
-                pcb[target_pid].state = STATE_READY;
+            target->pending_signal = signal;
+            if (target->state == STATE_PAUSED) {
+                target->state = STATE_READY;
             }
         }
     }
 }
 
 void kernel_sleep(int ticks_to_sleep) {
-    pcb[current_pid].wakeup_tick = system_ticks + ticks_to_sleep;
-    pcb[current_pid].state = STATE_SLEEPING;
-    // O schedule() no final da syscall vai forçar a troca de contexto
+    curr_pcb->wakeup_tick = system_ticks + ticks_to_sleep;
+    curr_pcb->state = STATE_SLEEPING;
 }
 
 void kernel_alarm(int ticks) {
@@ -146,39 +147,45 @@ void kernel_alarm(int ticks) {
 }
 
 void kernel_pause() {
-    pcb[current_pid].state = STATE_PAUSED;
+    curr_pcb->state = STATE_PAUSED;
 }
 
 //----------------------------------------------------------------------
 // --- Criação do Processo ---
 //----------------------------------------------------------------------
 void create_process(int pid, int task_addr, int stack_base, int priority, int mem_base) {
-    pcb[pid].state = STATE_READY;
-    pcb[pid].ac = 0;
-    pcb[pid].priority = priority;
-    pcb[pid].age = 0;
-    pcb[pid].mem_base = mem_base;
-    pcb[pid].waiting_for_pid = -1;
-    pcb[pid].wakeup_tick = 0;
-    pcb[pid].alarm_tick = 0;
-    pcb[pid].pending_signal = 0;
-    pcb[pid].signal_handler = 0;
-    pcb[pid].saved_pc = 0;
-    pcb[pid].in_signal = 0;
+    struct PCB_Struct *p;
+    int *sp_ptr;
     
-    ram[stack_base - 1] = task_addr; 
-    ram[stack_base - 2] = 8;  // Flag 8 (Bit 3) = RING 1 (USER MODE)
-    ram[stack_base - 3] = 0; 
-    ram[stack_base - 4] = 0; 
-    ram[stack_base - 5] = 0; 
-    ram[stack_base - 6] = 0; 
-    ram[stack_base - 7] = 0; 
-    ram[stack_base - 8] = 0; 
-    ram[stack_base - 9] = 0; 
+    p = &pcb[pid]; // Multiplicação pesada executada UMA única vez
     
-    pcb[pid].sp = stack_base - 9;   
-}
+    p->state = STATE_READY;
+    p->ac = 0;
+    p->priority = priority;
+    p->age = 0;
+    p->mem_base = mem_base;
+    p->waiting_for_pid = -1;
+    p->wakeup_tick = 0;
+    p->alarm_tick = 0;
+    p->pending_signal = 0;
+    p->signal_handler = 0;
+    p->saved_pc = 0;
+    p->in_signal = 0;
+        
+    sp_ptr = &ram[stack_base - 1]; 
 
+    *sp_ptr = task_addr; sp_ptr = sp_ptr - 1;
+    *sp_ptr = 8;         sp_ptr = sp_ptr - 1; // Flag 8 (User Mode)
+    *sp_ptr = 0;         sp_ptr = sp_ptr - 1;
+    *sp_ptr = 0;         sp_ptr = sp_ptr - 1;
+    *sp_ptr = 0;         sp_ptr = sp_ptr - 1;
+    *sp_ptr = 0;         sp_ptr = sp_ptr - 1;
+    *sp_ptr = 0;         sp_ptr = sp_ptr - 1;
+    *sp_ptr = 0;         sp_ptr = sp_ptr - 1;
+    *sp_ptr = 0; 
+    
+    p->sp = stack_base - 9;
+}
 
 //----------------------------------------------------------------------
 // --- ROTINAS DE INJEÇÃO DO KERNEL (SIGNALS) ---
@@ -186,18 +193,36 @@ void create_process(int pid, int task_addr, int stack_base, int priority, int me
 
 // Regista a função do utilizador
 void kernel_signal(int handler_addr) {
-    pcb[current_pid].signal_handler = handler_addr;
+    curr_pcb->signal_handler = handler_addr;
 }
 
-// A Mágica da Fuga (sigreturn)
+// A Mágica da Fuga Real (sigreturn)
 void kernel_sigreturn() {
-    pcb[current_pid].in_signal = 0;
-    pcb[current_pid].pending_signal = 0;
+    struct PCB_Struct *curr;
+    curr = &pcb[current_pid];
+
+    curr->in_signal = 0;
+    curr->pending_signal = 0;
     
-    // Quando o usuário chama sigreturn(), o Kernel extraiu o PC 
-    // atual (que é o final da função handler) para 'tmp_sys_pc'.
-    // Nós DESTRUÍMOS esse PC e o substituímos pelo PC original!
-    tmp_sys_pc = pcb[current_pid].saved_pc;
+    int orig_sp;
+    orig_sp = curr->sig_saved_sp;
+    curr->ac = curr->sig_saved_ac;
+    
+    // Ponteiro Deslizante para escrever na RAM
+    int *sp_ptr;
+    sp_ptr = &ram[orig_sp];
+    
+    *sp_ptr = curr->sig_saved_ptr;       sp_ptr = sp_ptr + 1;
+    *sp_ptr = curr->sig_saved_idx;       sp_ptr = sp_ptr + 1;
+    *sp_ptr = curr->sig_saved_lhs;       sp_ptr = sp_ptr + 1;
+    *sp_ptr = curr->sig_saved_val;       sp_ptr = sp_ptr + 1;
+    *sp_ptr = curr->sig_saved_left_cond; sp_ptr = sp_ptr + 1;
+    *sp_ptr = curr->sig_saved_left;      sp_ptr = sp_ptr + 1;
+    *sp_ptr = curr->sig_saved_right;     sp_ptr = sp_ptr + 1;
+    *sp_ptr = curr->sig_saved_flags;     sp_ptr = sp_ptr + 1;
+    *sp_ptr = curr->saved_pc;
+    
+    curr->sp = orig_sp;
 }
 
 // Permite que o Handler saiba qual sinal o acordou

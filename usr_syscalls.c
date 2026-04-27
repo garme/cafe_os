@@ -107,7 +107,7 @@ int read_char() {
 // =======================================================
 // BIBLIOTECA TRATAMENTO DE SINAIS
 // =======================================================
-void signal(int handler_addr) {
+void signal(int * handler_addr) {
     asm("LDA signal_handler_addr"); asm("SOP PUSH_OP");
     asm("MOV 15"); asm("SOP PUSH_OP");
     asm("INT SYSCALL_INT");

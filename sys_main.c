@@ -2,13 +2,13 @@
 
 // ESCOLHA O SEU ESCALONADOR AQUI (Comente um e descomente o outro)
 //#include "sys_sched_fp.c"    // Prioridade Fixa
-//#include "sys_sched_rr.c"    // Round-Robin
-#include "sys_sched_dp.c"    // Aging
+#include "sys_sched_rr.c"    // Round-Robin
+//#include "sys_sched_dp.c"    // Aging
 
 #include "sys_mem.c"         
 #include "sys_ipc.c"
 
-#include "usr_tasks_6.c"
+#include "usr_tasks_7.c"
 
 //Globais temporárias par AC e SP
 int isr_tmp_ac;   
@@ -82,33 +82,37 @@ void main() {
     asm("LDA tmp_left"); asm("SOP PUSH_OP");
     asm("LDA tmp_right"); asm("SOP PUSH_OP");
 
-    // 4. Guarda o ponteiro da pilha final no PCB
+    struct PCB_Struct *curr;
+    curr = &pcb[current_pid];
+    
     asm("MOV $SP");         
     asm("STA isr_tmp_sp");
 
-    pcb[current_pid].ac = isr_tmp_ac;
-    pcb[current_pid].sp = isr_tmp_sp;
+    curr->ac = isr_tmp_ac;
+    curr->sp = isr_tmp_sp;
 
     // --- LÓGICA DE TEMPO E SINAIS ---
     system_ticks = system_ticks + 1;
 
     int i;
+    struct PCB_Struct *p;
     i = 0;
     while(i < MAX_PROCESSES) {
-        if (pcb[i].state != STATE_TERMINATED) {
+        p = &pcb[i];
+        if (p->state != STATE_TERMINATED) {
             
             // 1. Verifica os processos em SLEEP
-            if (pcb[i].state == STATE_SLEEPING) {
-                if (system_ticks >= pcb[i].wakeup_tick) {
-                    pcb[i].state = STATE_READY; // Acorda!
+            if (p->state == STATE_SLEEPING) {
+                if (system_ticks >= p->wakeup_tick) {
+                    p->state = STATE_READY; // Acorda!
                 }
             }
 
             // 2. Verifica os ALARMES
-            if (pcb[i].alarm_tick > 0) {
-                if (system_ticks >= pcb[i].alarm_tick) {
-                    pcb[i].pending_signal = SIGALRM; // Entrega o sinal
-                    pcb[i].alarm_tick = 0;           // Desarma o alarme
+            if (p->alarm_tick > 0) {
+                if (system_ticks >= p->alarm_tick) {
+                    p->pending_signal = SIGALRM; // Entrega o sinal
+                    p->alarm_tick = 0;           // Desarma o alarme
                 }
             }
         }
@@ -142,6 +146,7 @@ void main() {
     // IDs 7 e 8: Mutex (Spinlock)
     if (tmp_sys_id == 7) {
         isr_tmp_ac = kernel_mutex_trylock(); // Responde 1 ou 0 para a tarefa
+        curr_pcb->ac = isr_tmp_ac;
     }
     if (tmp_sys_id == 8) {
         kernel_mutex_unlock();
@@ -158,6 +163,7 @@ void main() {
     // ID 11: Ler Caractere
     if (tmp_sys_id == 11) {
         isr_tmp_ac = kernel_read_char(); // Retorna o valor lido para a tarefa!
+        curr_pcb->ac = isr_tmp_ac;
     }
     // ID 12: Por a tarefa para dormir
     if (tmp_sys_id == 12) {
@@ -180,7 +186,10 @@ void main() {
     }
     if (tmp_sys_id == 17) {
         isr_tmp_ac = kernel_get_signal();
+        curr_pcb->ac = isr_tmp_ac;
     }
+    
+    
 
     // 6. Resolução da Syscall: Força o escalonador a atuar e salta para o fluxo de restauro
     schedule(); 
@@ -214,29 +223,40 @@ void main() {
     
     // =================================================================
     // STACK SPOOFING (A MÁGICA DOS SINAIS)
-    // O PC original está salvo na RAM, na posição (SP + 8).
-    // Se houver um sinal, nós alteramos o endereço na memória cirurgicamente!
     // =================================================================
+    
+    curr = &pcb[current_pid];
     int target_sp;
-    target_sp = pcb[current_pid].sp;
+    int *sp_ptr;
+    target_sp = curr->sp;
 
-    if (pcb[current_pid].pending_signal > 0) {
-        if (pcb[current_pid].signal_handler != 0) {
-            if (pcb[current_pid].in_signal == 0) {
-                // 1. Salva o PC original (que ia continuar a execução normal)
-                pcb[current_pid].saved_pc = ram[target_sp + 8];
+    if (curr->pending_signal > 0) {
+        if (curr->signal_handler != 0) {
+            if (curr->in_signal == 0) {
+                curr->sig_saved_sp = target_sp;
+                curr->sig_saved_ac = curr->ac;
                 
-                // 2. Falsifica a pilha injetando o endereço do Handler
-                ram[target_sp + 8] = pcb[current_pid].signal_handler;
+                sp_ptr = &ram[target_sp]; 
                 
-                // 3. Tranca para não entrar em loop recursivo
-                pcb[current_pid].in_signal = 1;
+                curr->sig_saved_ptr = *sp_ptr;       sp_ptr = sp_ptr + 1;
+                curr->sig_saved_idx = *sp_ptr;       sp_ptr = sp_ptr + 1;
+                curr->sig_saved_lhs = *sp_ptr;       sp_ptr = sp_ptr + 1;
+                curr->sig_saved_val = *sp_ptr;       sp_ptr = sp_ptr + 1;
+                curr->sig_saved_left_cond = *sp_ptr; sp_ptr = sp_ptr + 1;
+                curr->sig_saved_left = *sp_ptr;      sp_ptr = sp_ptr + 1;
+                curr->sig_saved_right = *sp_ptr;     sp_ptr = sp_ptr + 1;
+                curr->sig_saved_flags = *sp_ptr;     sp_ptr = sp_ptr + 1;
+                
+                curr->saved_pc = *sp_ptr; 
+                
+                // Injeta o handler no topo
+                *sp_ptr = curr->signal_handler;
+                
+                curr->in_signal = 1;
             }
         }
     }
     // =================================================================
-
-    // Restaura o contexto do processo eleito
 
     // Restaura o contexto do processo eleito
     isr_tmp_sp = pcb[current_pid].sp;
@@ -288,9 +308,10 @@ void main() {
     
     // create_process(PID, Função, Base_Pilha, Prioridade, Pont_Memoria)
     create_process(0, addr_task_a, mem_a + 100, 4, mem_a); // <--- Alta Prioridade
-    create_process(1, addr_task_b, mem_b + 100, 3, mem_b);  // <--- Baixa Prioridade
+    create_process(1, addr_task_b, mem_b + 100, 4, mem_b);  // <--- Baixa Prioridade
     
     current_pid = 0;
+    curr_pcb = &pcb[0];
     pcb[0].state = STATE_RUNNING;
     
     isr_tmp_sp = pcb[0].sp;

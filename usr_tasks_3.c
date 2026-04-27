@@ -10,7 +10,7 @@ naked void task_a() {
         
         sem_lock();
         printint(cont_a);
-        print_space();
+        printstr(" ");
         sem_unlock();
     }
 }
@@ -22,7 +22,7 @@ naked void task_b() {
         
         sem_lock();
         printint(cont_b);
-        print_space();
+        printstr(" ");
         sem_unlock();
     }
 }

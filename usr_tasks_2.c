@@ -10,7 +10,7 @@ naked void task_a() {
         
         mutex_lock();
         printint(cont_a);
-        print_space();
+        printstr(" ");
         mutex_unlock();
     }
 }
@@ -22,7 +22,7 @@ naked void task_b() {
         
         mutex_lock();
         printint(cont_b);
-        print_space();
+        printstr(" ");
         mutex_unlock();
     }
 }
