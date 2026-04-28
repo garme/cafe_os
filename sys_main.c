@@ -56,7 +56,7 @@ void main() {
     asm("kernel_syscall_handler:");
     asm("INT CLI_INT");
     asm("STA isr_tmp_ac"); // Preserva o acumulador sujo pelo processo
-
+    
     // 1. Extração Cirúrgica: Tira Flags, PC, ID e Arg do topo da pilha do utilizador
     asm("SOP POP_OP"); asm("STA tmp_sys_flags");
     asm("SOP POP_OP"); asm("STA tmp_sys_pc");
@@ -81,6 +81,8 @@ void main() {
     asm("LDA tmp_left_cond"); asm("SOP PUSH_OP");
     asm("LDA tmp_left"); asm("SOP PUSH_OP");
     asm("LDA tmp_right"); asm("SOP PUSH_OP");
+    asm("LDA tmp_arr_base"); asm("SOP PUSH_OP");
+    asm("LDA tmp_step");     asm("SOP PUSH_OP");
 
     struct PCB_Struct *curr;
     curr = &pcb[current_pid];
@@ -188,6 +190,13 @@ void main() {
         isr_tmp_ac = kernel_get_signal();
         curr_pcb->ac = isr_tmp_ac;
     }
+    // IDs 20, 21: Pipes
+    if (tmp_sys_id == 20) { 
+        curr_pcb->ac = kernel_write_pipe(tmp_sys_arg); 
+       }
+    if (tmp_sys_id == 21) { 
+        curr_pcb->ac = kernel_read_pipe(); 
+    }
     
     
 
@@ -201,7 +210,8 @@ void main() {
     // =======================================================
     asm("kernel_dispatcher:");
     asm("INT CLI_INT");
-    asm("STA isr_tmp_ac");       
+    asm("STA isr_tmp_ac");
+           
     asm("LDA tmp_ptr"); asm("SOP PUSH_OP");
     asm("LDA tmp_idx"); asm("SOP PUSH_OP");
     asm("LDA tmp_lhs"); asm("SOP PUSH_OP");
@@ -209,6 +219,9 @@ void main() {
     asm("LDA tmp_left_cond"); asm("SOP PUSH_OP");
     asm("LDA tmp_left"); asm("SOP PUSH_OP");
     asm("LDA tmp_right"); asm("SOP PUSH_OP");
+    asm("LDA tmp_arr_base"); asm("SOP PUSH_OP");
+    asm("LDA tmp_step");     asm("SOP PUSH_OP");
+    
     asm("MOV $SP");         
     asm("STA isr_tmp_sp");
     
@@ -220,6 +233,7 @@ void main() {
     
     // Rótulo de reentrada (Aproveitado pelo Fault e Syscall se precisarem)
     asm("dispatcher_restore_context:");
+    
     
     // =================================================================
     // STACK SPOOFING (A MÁGICA DOS SINAIS)
@@ -236,17 +250,19 @@ void main() {
                 curr->sig_saved_sp = target_sp;
                 curr->sig_saved_ac = curr->ac;
                 
-                sp_ptr = &ram[target_sp]; 
+                sp_ptr = &ram[target_sp];
                 
-                curr->sig_saved_ptr = *sp_ptr;       sp_ptr = sp_ptr + 1;
-                curr->sig_saved_idx = *sp_ptr;       sp_ptr = sp_ptr + 1;
-                curr->sig_saved_lhs = *sp_ptr;       sp_ptr = sp_ptr + 1;
-                curr->sig_saved_val = *sp_ptr;       sp_ptr = sp_ptr + 1;
+                curr->sig_saved_step      = *sp_ptr; sp_ptr = sp_ptr + 1;
+                curr->sig_saved_arr_base  = *sp_ptr; sp_ptr = sp_ptr + 1;
+                curr->sig_saved_right     = *sp_ptr; sp_ptr = sp_ptr + 1;
+                curr->sig_saved_left      = *sp_ptr; sp_ptr = sp_ptr + 1;
                 curr->sig_saved_left_cond = *sp_ptr; sp_ptr = sp_ptr + 1;
-                curr->sig_saved_left = *sp_ptr;      sp_ptr = sp_ptr + 1;
-                curr->sig_saved_right = *sp_ptr;     sp_ptr = sp_ptr + 1;
-                curr->sig_saved_flags = *sp_ptr;     sp_ptr = sp_ptr + 1;
+                curr->sig_saved_val       = *sp_ptr; sp_ptr = sp_ptr + 1;
+                curr->sig_saved_lhs       = *sp_ptr; sp_ptr = sp_ptr + 1;
+                curr->sig_saved_idx       = *sp_ptr; sp_ptr = sp_ptr + 1;
+                curr->sig_saved_ptr       = *sp_ptr; sp_ptr = sp_ptr + 1;
                 
+                curr->sig_saved_flags = *sp_ptr;     sp_ptr = sp_ptr + 1;
                 curr->saved_pc = *sp_ptr; 
                 
                 // Injeta o handler no topo
@@ -265,6 +281,8 @@ void main() {
     asm("LDA isr_tmp_sp");
     asm("MOV -$SP");             
     
+    asm("SOP POP_OP"); asm("STA tmp_step");
+    asm("SOP POP_OP"); asm("STA tmp_arr_base");
     asm("SOP POP_OP"); asm("STA tmp_right");
     asm("SOP POP_OP"); asm("STA tmp_left");
     asm("SOP POP_OP"); asm("STA tmp_left_cond");
@@ -317,17 +335,5 @@ void main() {
     isr_tmp_sp = pcb[0].sp;
     isr_tmp_ac = pcb[0].ac;
     
-    asm("LDA isr_tmp_sp");
-    asm("MOV -$SP");             
-
-    asm("SOP POP_OP"); asm("STA tmp_right");
-    asm("SOP POP_OP"); asm("STA tmp_left");
-    asm("SOP POP_OP"); asm("STA tmp_left_cond");
-    asm("SOP POP_OP"); asm("STA tmp_val");
-    asm("SOP POP_OP"); asm("STA tmp_lhs");
-    asm("SOP POP_OP"); asm("STA tmp_idx");
-    asm("SOP POP_OP"); asm("STA tmp_ptr");
-
-    asm("LDA isr_tmp_ac");       
-    asm("INT IRET_INT");         
+    asm("JMP dispatcher_restore_context");
 }

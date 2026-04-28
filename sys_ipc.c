@@ -10,6 +10,68 @@ int tmp_lock_ret; // Usada em zonas estritamente protegidas (CLI)
 
 
 //----------------------------------------------------------------------
+// --- Utilitários de Pipes ---
+//----------------------------------------------------------------------
+int PIPE_SIZE = 8;
+int pipe_buffer[8];
+int pipe_head = 0;
+int pipe_tail = 0;
+int pipe_count = 0;
+
+int kernel_write_pipe(int val) {
+    int i;
+    struct PCB_Struct *p;
+
+    if (pipe_count == PIPE_SIZE) {
+        curr_pcb->state = STATE_WAITING_PIPE_WRITE;
+        return 0; // Falha
+    }
+    
+    pipe_buffer[pipe_head] = val;
+    pipe_head = pipe_head + 1;
+    if (pipe_head == PIPE_SIZE) { pipe_head = 0; }
+    pipe_count = pipe_count + 1;
+    
+    i = 0;
+    while(i < MAX_PROCESSES) {
+        p = &pcb[i];
+        if (p->state == STATE_WAITING_PIPE_READ) {
+            p->state = STATE_READY;
+        }
+        i = i + 1;
+    }
+    return 1;
+}
+
+int kernel_read_pipe() {
+    int i;
+    int val;
+    struct PCB_Struct *p;
+
+    if (pipe_count == 0) {
+        curr_pcb->state = STATE_WAITING_PIPE_READ;
+        return -1; // Vazio
+    }
+    
+    val = pipe_buffer[pipe_tail];
+    pipe_tail = pipe_tail + 1;
+    if (pipe_tail == PIPE_SIZE) { pipe_tail = 0; }
+    pipe_count = pipe_count - 1;
+    
+    i = 0;
+    while(i < MAX_PROCESSES) {
+        p = &pcb[i];
+        if (p->state == STATE_WAITING_PIPE_WRITE) {
+            p->state = STATE_READY;
+        }
+        i = i + 1;
+    }
+    return val;
+}
+
+
+
+//----------------------------------------------------------------------
 // --- Utilitários de Acordar Processos ---
 //----------------------------------------------------------------------
 void wakeup_waiters(int dead_pid) {
@@ -171,6 +233,19 @@ void create_process(int pid, int task_addr, int stack_base, int priority, int me
     p->signal_handler = 0;
     p->saved_pc = 0;
     p->in_signal = 0;
+    
+    p->sig_saved_sp = 0;
+    p->sig_saved_ac = 0;
+    p->sig_saved_ptr = 0;
+    p->sig_saved_idx = 0;
+    p->sig_saved_lhs = 0;
+    p->sig_saved_val = 0;
+    p->sig_saved_left_cond = 0;
+    p->sig_saved_left = 0;
+    p->sig_saved_right = 0;
+    p->sig_saved_arr_base = 0; // Novo
+    p->sig_saved_step = 0;     // Novo
+    p->sig_saved_flags = 0;
         
     sp_ptr = &ram[stack_base - 1]; 
 
@@ -182,9 +257,11 @@ void create_process(int pid, int task_addr, int stack_base, int priority, int me
     *sp_ptr = 0;         sp_ptr = sp_ptr - 1;
     *sp_ptr = 0;         sp_ptr = sp_ptr - 1;
     *sp_ptr = 0;         sp_ptr = sp_ptr - 1;
+    *sp_ptr = 0;         sp_ptr = sp_ptr - 1;
+    *sp_ptr = 0;         sp_ptr = sp_ptr - 1;
     *sp_ptr = 0; 
     
-    p->sp = stack_base - 9;
+    p->sp = stack_base - 11;
 }
 
 //----------------------------------------------------------------------

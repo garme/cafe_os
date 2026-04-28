@@ -237,3 +237,45 @@ void readstr(char* buffer) {
         }
     }
 }
+
+// =======================================================
+// BIBLIOTECA DE IPC (PIPES)
+// =======================================================
+
+int write_pipe(int val) {
+    int success;
+    success = 0;
+    
+    // Fica em laço tentando escrever. 
+    // Se falhar (retornar 0), o Kernel bloqueia a tarefa e ela só
+    // volta a testar o laço quando for acordada pelo leitor.
+    while(success == 0) {
+        // O compilador mapeia o argumento 'val' como 'write_pipe_val'
+        asm("LDA write_pipe_val"); asm("SOP PUSH_OP");
+        
+        asm("MOV 20"); asm("SOP PUSH_OP"); // ID 20: kernel_write_pipe
+        asm("INT SYSCALL_INT");
+        asm("STA sys_ret_val");
+        
+        success = sys_ret_val;
+    }
+    return success;
+}
+
+int read_pipe() {
+    int val;
+    val = -1;
+    
+    // Fica em laço tentando ler.
+    // Se o pipe estiver vazio (retornar -1), o Kernel bloqueia a tarefa.
+    while(val == -1) {
+        asm("MOV 0"); asm("SOP PUSH_OP"); // Argumento dummy (não usado)
+        
+        asm("MOV 21"); asm("SOP PUSH_OP"); // ID 21: kernel_read_pipe
+        asm("INT SYSCALL_INT");
+        asm("STA sys_ret_val");
+        
+        val = sys_ret_val;
+    }
+    return val;
+}

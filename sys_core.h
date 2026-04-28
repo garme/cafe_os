@@ -7,7 +7,9 @@ int STATE_BLOCKED    = 2;
 int STATE_TERMINATED = 3;
 int STATE_WAITING    = 4;
 int STATE_SLEEPING   = 5;
-int STATE_PAUSED     = 6; 
+int STATE_PAUSED     = 6;
+int STATE_WAITING_PIPE_READ  = 7;
+int STATE_WAITING_PIPE_WRITE = 8;
 
 // --- SINAIS POSIX BÁSICOS ---
 int SIGKILL = 9;  // Mata imediatamente (não pode ser ignorado)
@@ -60,6 +62,8 @@ struct PCB_Struct {
     int sig_saved_left;
     int sig_saved_right;
     int sig_saved_flags;
+    int sig_saved_arr_base;
+    int sig_saved_step;
 };
 
 int MAX_PROCESSES = 2;

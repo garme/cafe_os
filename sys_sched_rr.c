@@ -69,7 +69,6 @@ void schedule() {
         return;
     }
     else {
-        asm("INT CLI_INT");
-        asm("INT HALT_INT");
+        return;
     }
 }
