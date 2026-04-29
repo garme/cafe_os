@@ -8,7 +8,7 @@
 #include "sys_mem.c"         
 #include "sys_ipc.c"
 
-#include "usr_tasks_7.c"
+#include "usr_tasks_10.c"
 
 //Globais temporárias par AC e SP
 int isr_tmp_ac;   
@@ -192,10 +192,12 @@ void main() {
     }
     // IDs 20, 21: Pipes
     if (tmp_sys_id == 20) { 
-        curr_pcb->ac = kernel_write_pipe(tmp_sys_arg); 
+        isr_tmp_ac = kernel_write_pipe(tmp_sys_arg); 
+        curr_pcb->ac = isr_tmp_ac; 
        }
     if (tmp_sys_id == 21) { 
-        curr_pcb->ac = kernel_read_pipe(); 
+        isr_tmp_ac = kernel_read_pipe(); 
+        curr_pcb->ac = isr_tmp_ac; 
     }
     
     

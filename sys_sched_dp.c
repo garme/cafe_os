@@ -34,24 +34,60 @@ void schedule() {
         while(1){} 
     }
     
-    // 3. Envelhecimento (Aging) e Busca
-    highest_priority = 0; 
-    next_pid = current_pid; 
+    // 3. Busca com Envelhecimento (Aging) e Time Warp
+    next_pid = -1; 
     
-    i = 0;
-    while (i < MAX_PROCESSES) {
-        p = &pcb[i];
-        if (p->state == STATE_READY) {
+    // Fica preso no escalonador até achar alguém pronto!
+    while (next_pid == -1) {
+        highest_priority = -1; // Resetamos a prioridade a cada ciclo de busca
+        
+        i = 0;
+        while (i < MAX_PROCESSES) {
+            p = &pcb[i];
+            if (p->state == STATE_READY) {
+                
+                p->age = p->age + 1; // Envelhece quem está esperando
+                effective_priority = p->priority + p->age;
+                
+                if (effective_priority > highest_priority) {
+                    highest_priority = effective_priority;
+                    next_pid = i;
+                }
+            }
+            i = i + 1;
+        }
+        
+        // Se a fila de prontos estava vazia (Todos dormindo/bloqueados)
+        if (next_pid == -1) {
+            // Avança o relógio instantaneamente (Simula a ociosidade da CPU)
+            system_ticks = system_ticks + 1;
             
-            p->age = p->age + 1;
-            effective_priority = p->priority + p->age;
-            
-            if (effective_priority > highest_priority) {
-                highest_priority = effective_priority;
-                next_pid = i;
+            i = 0;
+            while(i < MAX_PROCESSES) {
+                p = &pcb[i];
+                
+                // Acorda quem dorme no sleep()
+                if (p->state == STATE_SLEEPING) {
+                    if (system_ticks >= p->wakeup_tick) {
+                        p->state = STATE_READY;
+                    }
+                }
+                
+                // Dispara os alarmes pendentes
+                if (p->alarm_tick > 0) {
+                    if (system_ticks >= p->alarm_tick) {
+                        p->pending_signal = 14; // SIGALRM
+                        p->alarm_tick = 0;
+                        
+                        // Sinais acordam processos em pause()
+                        if (p->state == STATE_PAUSED) {
+                            p->state = STATE_READY;
+                        }
+                    }
+                }
+                i = i + 1;
             }
         }
-        i = i + 1;
     }
     
     // 4. Promove o processo vencedor e atualiza o Cache Global
@@ -59,7 +95,7 @@ void schedule() {
     curr_pcb = &pcb[current_pid]; // <--- ATUALIZA O CACHE KERNEL
     
     curr_pcb->state = STATE_RUNNING;
-    curr_pcb->age = 0;
+    curr_pcb->age = 0; // Zera o aging de quem ganhou a CPU
     
     if (curr_pcb->state == STATE_TERMINATED) {
         asm("INT CLI_INT");

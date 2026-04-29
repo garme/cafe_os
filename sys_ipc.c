@@ -12,8 +12,8 @@ int tmp_lock_ret; // Usada em zonas estritamente protegidas (CLI)
 //----------------------------------------------------------------------
 // --- Utilitários de Pipes ---
 //----------------------------------------------------------------------
-int PIPE_SIZE = 8;
-int pipe_buffer[8];
+int PIPE_SIZE = 20;
+int pipe_buffer[20];
 int pipe_head = 0;
 int pipe_tail = 0;
 int pipe_count = 0;
