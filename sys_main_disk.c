@@ -11,7 +11,7 @@
 #include "sys_fs.c"
 #include "sys_disk.c"
 
-#include "usr_tasks_10.c"
+#include "usr_tasks_11.c"
 
 //Globais temporárias par AC e SP
 int isr_tmp_ac;   
@@ -26,7 +26,6 @@ int tmp_sys_arg2;
 
 //Globais endereços de memória das tasks
 int addr_task_a;
-int addr_task_b;
 
 
 void main() {
@@ -339,17 +338,14 @@ void main() {
     
     // Captura os endereços das funções
     asm("MOV task_a"); asm("STA addr_task_a");
-    asm("MOV task_b"); asm("STA addr_task_b");
     
     // Aloca 100 palavras na RAM dinamicamente para cada processo!
     // Nota: Como a pilha cresce para BAIXO, o topo da pilha é (Ponteiro + Tamanho)
-    int mem_a, mem_b;
+    int mem_a;
     mem_a = malloc(100);
-    mem_b = malloc(100);
     
     // create_process(PID, Função, Base_Pilha, Prioridade, Pont_Memoria)
     create_process(0, addr_task_a, mem_a + 100, 4, mem_a); // <--- Alta Prioridade
-    create_process(1, addr_task_b, mem_b + 100, 4, mem_b);  // <--- Baixa Prioridade
     
     current_pid = 0;
     curr_pcb = &pcb[0];
