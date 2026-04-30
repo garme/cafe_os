@@ -291,3 +291,15 @@ int shmget(int key, int size) {
     asm("STA sys_ret_val");
     return sys_ret_val;
 }
+
+// =======================================================
+// CRIAÇÃO DINÂMICA DE PROCESSOS
+// =======================================================
+int spawn(int task_addr, int priority) {
+    asm("LDA spawn_priority");  asm("SOP PUSH_OP"); 
+    asm("LDA spawn_task_addr"); asm("SOP PUSH_OP"); 
+    asm("MOV 6");               asm("SOP PUSH_OP"); // ID 6: kernel_spawn
+    asm("INT SYSCALL_INT");
+    asm("STA sys_ret_val");
+    return sys_ret_val;
+}

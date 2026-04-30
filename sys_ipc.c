@@ -368,3 +368,36 @@ int kernel_read_char() {
     asm("STA isr_tmp_ac"); 
     return isr_tmp_ac;
 }
+
+
+//----------------------------------------------------------------------
+// --- Criação Dinâmica de Processos (Spawn) ---
+//----------------------------------------------------------------------
+int kernel_spawn(int task_addr, int priority) {
+    int i = 0;
+    int free_pid = -1;
+    int mem;
+    
+    // 1. Procura um PID livre (Terminado)
+    while (i < MAX_PROCESSES && free_pid == -1) {
+        if (pcb[i].state == STATE_TERMINATED) {
+            free_pid = i;
+        }
+        i = i + 1;
+    }
+    
+    if (free_pid == -1) {
+        return -1; // Erro: Tabela de processos cheia
+    }
+    
+    // 2. Aloca a pilha para o novo processo (40 palavras)
+    mem = malloc(40);
+    if (mem == 0) {
+        return -1; // Erro: Out of Memory no Heap
+    }
+    
+    // 3. Usa a função nativa para montar a pilha do novo processo
+    create_process(free_pid, task_addr, mem + 40, priority, mem);
+    
+    return free_pid; // Retorna o PID do filho para o pai
+}
