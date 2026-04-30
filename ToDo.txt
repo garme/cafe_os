@@ -3,17 +3,41 @@ Até agora, os processos (`task_a`, `task_b`) são "chumbados" no código do `os
 * **O Recurso:** Criar uma tarefa principal (PID 0) que atue como um Shell. Ela ficaria em um laço infinito usando `readstr()` para ler o teclado.
 * **A Engenharia:** Precisaríamos implementar a famosa syscall **`fork()`** ou **`exec()`** (ou uma versão unificada `spawn()`). O usuário digitaria "lebre" no terminal, e o Shell pediria ao Kernel para alocar memória, carregar o ponteiro da função correspondente e injetar a nova tarefa na fila de Prontos dinamicamente.
 
-### 2. Memória Compartilhada (Shared Memory IPC)
-Você já tem Pipes, que são ótimos para fluxo de dados sequenciais (streams). Mas e se duas tarefas precisarem manipular uma matriz gigante juntas?
-* **O Recurso:** Implementar o modelo POSIX de memória compartilhada (`shmget`, `shmat`).
-* **A Engenharia:** O Kernel reservaria um bloco especial no Heap. Quando a Tarefa A e a Tarefa B chamassem `shmget("matriz")`, o Kernel devolveria para ambas exatamente o mesmo endereço de memória. Isso criaria cenários fantásticos para os alunos testarem condições de corrida (Race Conditions) e a necessidade real de usar os `mutex_lock()` que já construímos.
 
-### 3. Proteção de Memória (O Famoso *Segmentation Fault*)
+### 2. Semáforos de Contagem (O Produtor e Consumidor)
+Neste momento, o seu `kernel_sem_lock()` é um *Semáforo Binário* (funciona exatamente como um Mutex, travando em 0 ou 1). 
+*   **O Conceito Teórico:** Semáforos de Contagem (Counting Semaphores) de Dijkstra. Eles não gerenciam apenas "quem entra na sala", mas "quantas vagas existem na garagem".
+*   **A Engenharia:** Nós alteraríamos a variável `SEM_STATE` para `SEM_COUNT = N`. Se você tem um buffer de 5 posições, o semáforo começa em 5. Cada `sem_wait()` diminui a conta. Quando chega a 0, o processo é bloqueado. Cada `sem_post()` aumenta a conta e acorda quem está esperando.
+*   **A Prática:** Você implementaria o clássico "Problema do Produtor-Consumidor", onde a Task A gera dados e a Task B consome, com o Kernel adormecendo a Task A se o buffer encher, e adormecendo a Task B se o buffer esvaziar.
+*   **Peso na RAM:** **Baixíssimo.** Exige apenas alterar `if`s no `sys_ipc_6.c`.
+
+### 3. Desfragmentação de Heap (Memory Coalescing)
+O seu `mm_heap.c` usa o algoritmo *First-Fit*. Quando tarefas fazem muito `malloc()` e `free()`, a RAM fica parecendo um queijo suíço (Fragmentação Externa). Uma tarefa pode pedir 20 palavras, haver 30 livres no total, mas espalhadas em blocos de 10, fazendo o `malloc` falhar (Kernel Panic por *Out Of Memory*).
+*   **O Conceito Teórico:** Coalescência de Memória (Memory Compaction / Merging).
+*   **A Engenharia:** Criaríamos uma função no Kernel que, ao fazer um `free()` (ou em momentos de ociosidade do escalonador), varre o Heap. Se ela encontrar dois blocos vizinhos que estão livres (`is_free == 1`), ela soma os tamanhos e funde os dois em um único bloco gigante.
+*   **A Prática:** Você faria um teste alocando blocos A, B e C. Depois daria `free(A)` e `free(B)`. O Kernel automaticamente os uniria, permitindo um `malloc(A+B)` logo em seguida.
+*   **Peso na RAM:** **Baixo.** Apenas um novo laço `while` de varredura no `sys_mem.c`.
+
+### 4. Filas de Mensagens Tipadas (Message Queues)
+Você já tem Pipes, que são fluxos de dados "cegos" (First-In, First-Out simples). Mas e se uma tarefa quiser mandar um aviso de erro e outra quiser mandar um aviso de rede pelo mesmo canal?
+*   **O Conceito Teórico:** Caixas de Correio (Message Passing com Tipagem).
+*   **A Engenharia:** Criar uma Syscall `msg_send(int type, int value)` e `msg_recv(int type)`. O Kernel manteria um array de structs contendo `[tipo, valor]`. Uma tarefa poderia dizer: "Kernel, durma o meu processo até chegar uma mensagem do tipo 2 (Erro)". O Kernel ignoraria as mensagens do tipo 1 e só acordaria a tarefa na hora certa.
+*   **A Prática:** Criação de um sistema de "Publish/Subscribe" (Pub/Sub) rústico entre processos.
+*   **Peso na RAM:** **Moderado.** Exige um novo array bidimensional (ou struct) no Kernel para guardar as mensagens.
+
+
+Por qual nível você prefere começar hoje?
+
+
+
+--- out of main ---
+### X. Proteção de Memória (O Famoso *Segmentation Fault*)
 Atualmente, qualquer processo pode acessar qualquer endereço da RAM se souber o número. 
 * **O Recurso:** Uma Unidade de Gerenciamento de Memória (MMU) conceitual via software.
 * **A Engenharia:** Modificaríamos a rotina de interrupção para verificar se os ponteiros lidos/escritos pela tarefa estão dentro do intervalo seguro (entre `mem_base` e o topo da pilha dela). Se uma tarefa tentar acessar a memória de outra, o Kernel emite um **SIGSEGV** (Sinal 11) e mata o processo infrator com a mensagem clássica de "Falha de Segmentação".
 
-### 4. Sistema de Arquivos em RAM (RAM Disk)
+
+### X. Sistema de Arquivos em RAM (RAM Disk)
 Processos morrem e seus dados somem. Precisamos de persistência (mesmo que temporária, em memória).
 * **O Recurso:** Um Virtual File System (VFS) rudimentar.
 * **A Engenharia:** Separar um pedaço final da RAM para atuar como um "Disco". Criaríamos uma Tabela de Inodes simples onde os processos poderiam usar syscalls como `open("dados.txt")`, `write()`, `seek()` e `close()`. Isso demonstraria na prática como o SO abstrai blocos de memória transformando-os no conceito de "arquivos".

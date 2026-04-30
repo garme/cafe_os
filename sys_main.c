@@ -8,10 +8,7 @@
 #include "sys_mem.c"         
 #include "sys_ipc.c"
 
-#include "sys_fs.c"
-#include "sys_disk.c"
-
-#include "usr_tasks_10.c"
+#include "usr_tasks_11.c"
 
 //Globais temporárias par AC e SP
 int isr_tmp_ac;   
@@ -67,7 +64,7 @@ void main() {
     asm("SOP POP_OP"); asm("STA tmp_sys_arg");
     
     // Extrai mais um arg da pilha, se for a syscall kill (ID 3)
-    if (tmp_sys_id == 3 || tmp_sys_id == 23 || tmp_sys_id == 24) {
+    if (tmp_sys_id == 3 || tmp_sys_id == 25) {
         asm("SOP POP_OP"); asm("STA tmp_sys_arg2"); 
     }
 
@@ -202,23 +199,13 @@ void main() {
         isr_tmp_ac = kernel_read_pipe(); 
         curr_pcb->ac = isr_tmp_ac; 
     }
-    // ID 22: Formatar FS
-    if (tmp_sys_id == 22) { 
-        kernel_fs_format(); 
-    }
-    // ID 23: Ler bloco do FS (arg1 = file_id, arg2 = buffer_addr)
-    if (tmp_sys_id == 23) { 
-        // Nota: Você pode precisar empilhar mais argumentos dependendo da sua ABI.
-        isr_tmp_ac = kernel_fs_read_block(tmp_sys_arg, 0, (int*)tmp_sys_arg2); 
+    // ID 25: Memória Compartilhada (shmget)
+    if (tmp_sys_id == 25) { 
+        // arg1 = key, arg2 = size
+        isr_tmp_ac = kernel_shmget(tmp_sys_arg, tmp_sys_arg2); 
         curr_pcb->ac = isr_tmp_ac; 
     }
-    // ID 24: Escrever bloco no FS
-    if (tmp_sys_id == 24) { 
-        isr_tmp_ac = kernel_fs_write_block(tmp_sys_arg, (int*)tmp_sys_arg2); 
-        curr_pcb->ac = isr_tmp_ac; 
-    }
-    
-    
+
 
     // 6. Resolução da Syscall: Força o escalonador a atuar e salta para o fluxo de restauro
     schedule(); 
@@ -320,9 +307,6 @@ void main() {
     asm("os_boot:");
     asm("INT CLI_INT");
     
-    // Inicializa FS
-    init_disk_subsystem();
-    
     // Limpa PCB
     for(i=0; i<MAX_PROCESSES; i++) { pcb[i].state = STATE_TERMINATED; }
     
@@ -337,6 +321,8 @@ void main() {
     asm("MOV os_heap"); asm("STA HEAP_START");
     init_heap(); // Formata a memória a partir da posição 2000
     
+    init_ipc_shm(); // Inicializa os controladores de SHM
+    
     // Captura os endereços das funções
     asm("MOV task_a"); asm("STA addr_task_a");
     asm("MOV task_b"); asm("STA addr_task_b");
@@ -344,12 +330,12 @@ void main() {
     // Aloca 100 palavras na RAM dinamicamente para cada processo!
     // Nota: Como a pilha cresce para BAIXO, o topo da pilha é (Ponteiro + Tamanho)
     int mem_a, mem_b;
-    mem_a = malloc(100);
-    mem_b = malloc(100);
+    mem_a = malloc(40);
+    mem_b = malloc(40);
     
     // create_process(PID, Função, Base_Pilha, Prioridade, Pont_Memoria)
-    create_process(0, addr_task_a, mem_a + 100, 4, mem_a); // <--- Alta Prioridade
-    create_process(1, addr_task_b, mem_b + 100, 4, mem_b);  // <--- Baixa Prioridade
+    create_process(0, addr_task_a, mem_a + 40, 4, mem_a); // <--- Alta Prioridade
+    create_process(1, addr_task_b, mem_b + 40, 4, mem_b);  // <--- Baixa Prioridade
     
     current_pid = 0;
     curr_pcb = &pcb[0];

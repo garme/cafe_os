@@ -280,26 +280,13 @@ int read_pipe() {
     return val;
 }
 
-
-void fs_format() {
-    asm("MOV 0"); asm("SOP PUSH_OP"); // Dummy
-    asm("MOV 22"); asm("SOP PUSH_OP");
-    asm("INT SYSCALL_INT");
-}
-
-int fs_write(int file_id, int* buffer) {
-    asm("LDA fs_write_buffer"); asm("SOP PUSH_OP"); 
-    asm("LDA fs_write_file_id"); asm("SOP PUSH_OP"); 
-    asm("MOV 24"); asm("SOP PUSH_OP");
-    asm("INT SYSCALL_INT");
-    asm("STA sys_ret_val");
-    return sys_ret_val;
-}
-
-int fs_read(int file_id, int* buffer) {
-    asm("LDA fs_read_buffer"); asm("SOP PUSH_OP"); 
-    asm("LDA fs_read_file_id"); asm("SOP PUSH_OP"); 
-    asm("MOV 23"); asm("SOP PUSH_OP");
+// =======================================================
+// BIBLIOTECA DE MEMÓRIA COMPARTILHADA
+// =======================================================
+int shmget(int key, int size) {
+    asm("LDA shmget_size"); asm("SOP PUSH_OP"); 
+    asm("LDA shmget_key");  asm("SOP PUSH_OP"); 
+    asm("MOV 25");          asm("SOP PUSH_OP"); // ID 25: kernel_shmget
     asm("INT SYSCALL_INT");
     asm("STA sys_ret_val");
     return sys_ret_val;
