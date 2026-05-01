@@ -2,8 +2,8 @@
 
 // ESCOLHA O SEU ESCALONADOR AQUI (Comente um e descomente o outro)
 //#include "sys_sched_fp.c"    // Prioridade Fixa
-//#include "sys_sched_rr.c"    // Round-Robin
-#include "sys_sched_dp.c"    // Aging
+#include "sys_sched_rr.c"    // Round-Robin
+//#include "sys_sched_dp.c"    // Aging
 
 #include "sys_mem.c"         
 #include "sys_ipc.c"
@@ -20,6 +20,7 @@ int tmp_sys_pc;
 int tmp_sys_id;
 int tmp_sys_arg;
 int tmp_sys_arg2;
+int tmp_sys_arg3;
 
 //Globais endereços de memória das tasks
 int addr_task_a;
@@ -63,8 +64,8 @@ void main() {
     asm("SOP POP_OP"); asm("STA tmp_sys_id");
     asm("SOP POP_OP"); asm("STA tmp_sys_arg");
     
-    // Extrai mais um arg da pilha, se for a syscall kill (ID 3)
-    if (tmp_sys_id == 3 || tmp_sys_id == 6 || tmp_sys_id == 25) {
+    // Extrai mais um arg da pilha, se for kill (3), spawn (6), shmget (25) ou msg_send (27)
+    if (tmp_sys_id == 3 || tmp_sys_id == 6 || tmp_sys_id == 25 || tmp_sys_id == 27) {
         asm("SOP POP_OP"); asm("STA tmp_sys_arg2"); 
     }
 
@@ -85,7 +86,8 @@ void main() {
     asm("LDA tmp_step");     asm("SOP PUSH_OP");
 
     struct PCB_Struct *curr;
-    curr = &pcb[current_pid];
+    //~ curr = &pcb[current_pid];
+    curr = curr_pcb;
     
     asm("MOV $SP");         
     asm("STA isr_tmp_sp");
@@ -99,25 +101,26 @@ void main() {
     int i;
     struct PCB_Struct *p;
     i = 0;
+    p = &pcb[0]; // 1. Inicializa o ponteiro na Base do Array
+    
     while(i < MAX_PROCESSES) {
-        p = &pcb[i];
+        // NÃO use p = &pcb[i]; Apenas use o 'p' diretamente!
         if (p->state != STATE_TERMINATED) {
             
-            // 1. Verifica os processos em SLEEP
             if (p->state == STATE_SLEEPING) {
                 if (system_ticks >= p->wakeup_tick) {
-                    p->state = STATE_READY; // Acorda!
+                    p->state = STATE_READY; 
                 }
             }
 
-            // 2. Verifica os ALARMES
             if (p->alarm_tick > 0) {
                 if (system_ticks >= p->alarm_tick) {
-                    p->pending_signal = SIGALRM; // Entrega o sinal
-                    p->alarm_tick = 0;           // Desarma o alarme
+                    p->pending_signal = 14; 
+                    p->alarm_tick = 0;           
                 }
             }
         }
+        p = p + 1; // 2. MATEMÁTICA DE PONTEIRO: Avança para o próximo PCB (Gera só 1 instrução ASM!)
         i = i + 1;
     }
     // -------------------------------------
@@ -206,6 +209,16 @@ void main() {
         isr_tmp_ac = kernel_shmget(tmp_sys_arg, tmp_sys_arg2); 
         curr_pcb->ac = isr_tmp_ac; 
     }
+    // ID 27: msg_send(pid, valor)
+    if (tmp_sys_id == 27) {
+        isr_tmp_ac = kernel_msg_send(tmp_sys_arg, tmp_sys_arg2);
+        curr_pcb->ac = isr_tmp_ac;
+    }
+    // ID 28: msg_recv()
+    if (tmp_sys_id == 28) {
+        isr_tmp_ac = kernel_msg_recv(); // Sem argumentos!
+        curr_pcb->ac = isr_tmp_ac;
+    }
 
 
     // 6. Resolução da Syscall: Força o escalonador a atuar e salta para o fluxo de restauro
@@ -234,8 +247,10 @@ void main() {
     asm("STA isr_tmp_sp");
     
     // Salva o contexto de quem estava a rodar
-    pcb[current_pid].ac = isr_tmp_ac;
-    pcb[current_pid].sp = isr_tmp_sp;
+    //~ pcb[current_pid].ac = isr_tmp_ac;
+    //~ pcb[current_pid].sp = isr_tmp_sp;
+    curr_pcb->ac = isr_tmp_ac;
+    curr_pcb->sp = isr_tmp_sp;
 
     schedule(); 
     
@@ -247,7 +262,8 @@ void main() {
     // STACK SPOOFING (A MÁGICA DOS SINAIS)
     // =================================================================
     
-    curr = &pcb[current_pid];
+    //~ curr = &pcb[current_pid];
+    curr = curr_pcb;
     int target_sp;
     int *sp_ptr;
     target_sp = curr->sp;
@@ -322,7 +338,8 @@ void main() {
     asm("MOV os_heap"); asm("STA HEAP_START");
     init_heap(); // Formata a memória a partir da posição 2000
     
-    init_ipc_shm(); // Inicializa os controladores de SHM
+    init_ipc_shm();       // Inicializa os controladores de SHM
+    init_ipc_mailbox();   // Inicializa as filas de mensagens
     
     // Captura os endereços das funções
     asm("MOV task_a"); asm("STA addr_task_a");

@@ -15,7 +15,9 @@ void init_heap() {
     ram[HEAP_START + 1] = 1;     // 1 = Livre, 0 = Ocupado
 }
 
+// =======================================================
 // O famoso Malloc! Retorna um ponteiro para a memória alocada
+// =======================================================
 int malloc(int size) {
     // --- DECLARAÇÕES NO TOPO DA FUNÇÃO ---
     int ptr;
@@ -64,12 +66,70 @@ int malloc(int size) {
     return 0; // Erro: Out of Memory (OOM)
 }
 
+// =======================================================
 // Libera a memória alocada
+// =======================================================
 void free(int ptr) {
     // Declarações no topo
     int header_ptr;
     
     // Recua 2 posições para encontrar o cabeçalho e marca como livre
     header_ptr = ptr - 2;
-    ram[header_ptr + 1] = 1; 
+    ram[header_ptr + 1] = 1;
+    
+    // Assim que um bloco é devolvido, o Kernel varre o Heap 
+    // para ver se pode juntá-lo com seus vizinhos!
+    kernel_defrag();
+}
+
+// =======================================================
+// Desfragmentador de Heap (Coalescência de Blocos Livres)
+// =======================================================
+void kernel_defrag() {
+    int ptr;
+    int block_size;
+    int is_free;
+    int next_ptr;
+    int next_is_free;
+    int next_size;
+    int merged;
+
+    ptr = HEAP_START;
+
+    // Varre o Heap inteiro de ponta a ponta
+    while (ptr < (HEAP_START + HEAP_SIZE)) {
+        block_size = ram[ptr];
+        is_free = ram[ptr + 1];
+
+        if (is_free == 1) {
+            next_ptr = ptr + block_size;
+            merged = 0;
+
+            // Verifica se o bloco vizinho da frente está dentro dos limites da RAM
+            if (next_ptr < (HEAP_START + HEAP_SIZE)) {
+                next_is_free = ram[next_ptr + 1];
+
+                // Se o vizinho também estiver livre, FUNDIMOS OS DOIS!
+                if (next_is_free == 1) {
+                    next_size = ram[next_ptr];
+                    
+                    // O bloco atual engole o vizinho (Soma dos tamanhos)
+                    ram[ptr] = block_size + next_size;
+                    
+                    // IMPORTANTE: Marcamos que fundimos e NÃO avançamos o ponteiro!
+                    // O novo bloco gigante pode ser vizinho de um terceiro bloco livre.
+                    merged = 1; 
+                }
+            }
+            
+            // Só avança para o próximo bloco se não houve fusão
+            if (merged == 0) {
+                ptr = next_ptr;
+            }
+            
+        } else {
+            // Se o bloco está ocupado por um processo, apenas pula por cima dele
+            ptr = ptr + block_size;
+        }
+    }
 }

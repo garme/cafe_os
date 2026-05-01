@@ -1,10 +1,3 @@
-### Coalescência de Memória (O Desfragmentador)
-Atualmente, o seu `free(ptr)` apenas recua duas posições e muda o status do bloco para `1` (Livre). Mas há um problema clássico de Sistemas Operacionais aqui: a **Fragmentação Externa**.
-Se você aloca três blocos (A, B, C) e depois libera A e B, você tem dois blocos livres vizinhos. O seu `malloc` atual não sabe que pode juntá-los para formar um bloco maior, e pode falhar ao tentar alocar muita memória, mesmo havendo espaço total disponível.
-*   **A Teoria:** Coalescência de blocos livres.
-*   **A Implementação:** Nós criaríamos uma função `kernel_defrag()` no `sys_mem.c`. O Kernel varreria o Heap de ponta a ponta. Toda vez que encontrasse dois blocos livres adjacentes, ele somaria os tamanhos e apagaria o cabeçalho do segundo bloco, fundindo-os num bloco gigante. Essa função poderia ser chamada automaticamente sempre que um `malloc` falhasse.
-*   **O Valor:** Demonstra visualmente como o SO limpa e reorganiza a bagunça deixada pelos processos na RAM.
-
 ### Filas de Mensagens (Message Queues)
 Você já possui Pipes (que são apenas túneis de bytes) e Memória Compartilhada (que é um bloco bruto). Em SOs modernos, usamos muito a "Troca de Mensagens".
 *   **A Teoria:** IPC por caixas de correio (Mailboxes) não-bloqueantes.

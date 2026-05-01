@@ -122,15 +122,18 @@ int kernel_read_pipe() {
 void wakeup_waiters(int dead_pid) {
     int i;
     struct PCB_Struct *p;
+    
     i = 0;
+    p = &pcb[0]; // Aponta para a base
+    
     while(i < MAX_PROCESSES) {
-        p = &pcb[i]; // Cache no laço
         if (p->state == STATE_WAITING) {
             if (p->waiting_for_pid == dead_pid) {
                 p->state = STATE_READY;
                 p->waiting_for_pid = -1;
             }
         }
+        p = p + 1; // Avança o ponteiro rápido!
         i = i + 1;
     }
 }
@@ -400,4 +403,37 @@ int kernel_spawn(int task_addr, int priority) {
     create_process(free_pid, task_addr, mem + 40, priority, mem);
     
     return free_pid; // Retorna o PID do filho para o pai
+}
+
+//----------------------------------------------------------------------
+// --- IPC: Filas de Mensagens (VERSÃO SIMPLISTA / ESPARTANA) ---
+//----------------------------------------------------------------------
+
+int ipc_mailbox[2]; // 0 significa "Vazio"
+
+void init_ipc_mailbox() {
+    ipc_mailbox[0] = 0; 
+    ipc_mailbox[1] = 0;
+}
+
+// Retorna 1 (Sucesso) ou 0 (Caixa cheia/Erro)
+int kernel_msg_send(int target_pid, int msg) {
+    if (target_pid < 0 || target_pid >= MAX_PROCESSES) { return 0; }
+    if (ipc_mailbox[target_pid] != 0) { return 0; }
+    
+    ipc_mailbox[target_pid] = msg;
+    return 1;
+}
+
+// Retorna o valor lido ou 0 se a caixa estiver vazia
+int kernel_msg_recv() {
+    int msg;
+    msg = ipc_mailbox[current_pid];
+    
+    if (msg == 0) {
+        return 0; // Vazia
+    }
+    
+    ipc_mailbox[current_pid] = 0; // Esvazia a caixa
+    return msg;
 }

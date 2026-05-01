@@ -303,3 +303,23 @@ int spawn(int task_addr, int priority) {
     asm("STA sys_ret_val");
     return sys_ret_val;
 }
+
+// =======================================================
+// BIBLIOTECA DE FILA DE MENSAGENS (IPC ASSÍNCRONO)
+// =======================================================
+int msg_send(int target_pid, int msg) {
+    asm("LDA msg_send_msg");        asm("SOP PUSH_OP"); 
+    asm("LDA msg_send_target_pid"); asm("SOP PUSH_OP"); 
+    asm("MOV 27");                  asm("SOP PUSH_OP"); 
+    asm("INT SYSCALL_INT");
+    asm("STA sys_ret_val");
+    return sys_ret_val;
+}
+
+int msg_recv() {
+    asm("MOV 0");  asm("SOP PUSH_OP"); // Dummy p/ alinhar com a extração padrao do arg1 no Kernel
+    asm("MOV 28"); asm("SOP PUSH_OP"); 
+    asm("INT SYSCALL_INT");
+    asm("STA sys_ret_val");
+    return sys_ret_val;
+}
