@@ -4,65 +4,94 @@
 
 DESCRIÇÃO
 -----------
-O CAFE OS (ESMERIX) é um Sistema Operacional acadêmico desenvolvido para a 
-arquitetura da processador Cariri, do simulador CompSim[1]. O sistema implementa 
-uma separação rigorosa entre o Kernel Space (Ring 0) e o User Space (Ring 1).
+O CAFE OS (Configurable And Flexible Environment Operating System), codinome 
+"ESMERIX", é um Sistema Operacional acadêmico desenvolvido para a arquitetura 
+do processador Cariri do simulador CompSim[1]. O sistema opera em uma CPU de 
+16-bits (Word-Addressable e Single-Cycle), implementando uma separação rigorosa 
+entre o Kernel Space (Ring 0) e o User Space (Ring 1).
 
-O controle do hardware e a proteção do sistema são garantidos por uma Tabela 
-de Vetores de Interrupção (IVT) densa, gerenciando Hardware Timer, Syscalls 
-(instrução TRAP) e Memory/Privilege Faults.
+A proteção do sistema é garantida por uma Tabela de Vetores de Interrupção (IVT) 
+densa que gerencia:
+- Vetor 0x0000: Boot / Reset
+- Vetor 0x0001: Hardware Timer (Preempção)
+- Vetor 0x0002: Syscall (Instrução TRAP)
+- Vetor 0x0003: Memory/Privilege Fault
 
 
 RECURSOS IMPLEMENTADOS
 -----------------------
 
 1. GERENCIAMENTO DE PROCESSOS (TASKS)
-   - Estrutura completa de Process Control Block (PCB) para cada tarefa.
-   - spawn(task_addr, priority): Criação dinâmica de processos com alocação 
-     automática de pilha no Heap.
-   - exit() e wait(pid): Finalização limpa com liberação de memória e 
-     sincronização de processos.
-   - Estados de Processo: RUNNING, READY, BLOCKED, WAITING, SLEEPING e 
-     PAUSED.
-   - Syscalls de Controle: yield(), sleep(ticks) e pause().
+   - Process Control Block (PCB): Armazena estado, registradores (SP, AC), 
+     prioridade, aging e contexto de sinais.
+   - spawn(task_addr, priority): Criação dinâmica de processos com alocação de 
+     pilha no Heap.
+   - exit() e wait(pid): Finalização e sincronização hierárquica.
+   - Estados de Processo: READY (0), RUNNING (1), BLOCKED (2), TERMINATED (3), 
+     WAITING (4), SLEEPING (5), PAUSED (6), WAITING_PIPE_READ (7) e 
+     WAITING_PIPE_WRITE (8).
 
 2. ESCALONAMENTO MODULAR (SCHEDULING)
-   - Round-Robin: Escalonamento circular com suporte a múltiplos processos.
-   - Time Warp: Recurso de ociosidade inteligente que avança o relógio do 
-     sistema instantaneamente caso não existam tarefas prontas.
-   - Prioridade Dinâmica (Aging): Prevenção de Starvation através do aumento 
-     progressivo da prioridade de tarefas em espera.
-   - Prioridade Fixa: Algoritmo baseado estritamente na precedência definida 
-     no spawn.
+   - Round-Robin: Escalonamento circular preemptivo.
+   - Prioridade Fixa: Escalonamento baseado estritamente no peso.
+   - Prioridade Dinâmica (Aging): Prevenção de inanição via envelhecimento 
+     gradual das tarefas em espera.
+   - Time Warp: Avanço instantâneo do relógio (system_ticks) quando o sistema 
+     está em ociosidade total.
 
 3. GERENCIAMENTO DE MEMÓRIA DINÂMICA
-   - malloc(size) e free(ptr): Gerenciador de memória baseado no algoritmo 
-     First-Fit com cabeçalhos dinâmicos.
-   - Defragmentação Ativa (Coalescência): Varredura automática durante o 
-     free() para fundir blocos livres contíguos e prevenir a fragmentação 
-     externa do Heap.
+   - sys_mem.c: Implementação de Heap dinâmico (First-Fit).
+   - malloc(size) / free(ptr): Alocação com metadados de controle.
+   - Defragmentação: Coalescência automática de blocos livres vizinhos durante 
+     a operação de liberação (free).
 
 4. COMUNICAÇÃO INTERPROCESSOS (IPC)
-   - Pipes Síncronos: Comunicação baseada em buffer circular (Produtor/Consumidor) 
-     com bloqueio automático (STATE_WAITING_PIPE_READ/WRITE).
-   - Memória Compartilhada (shmget): Alocação de regiões de memória acessíveis 
-     por diferentes processos via chaves únicas.
-   - Fila de Mensagens Assíncrona (Espartana): Sistema de Mailbox de baixíssimo 
-     overhead (uma palavra por PID) para troca de dados e comandos sem 
-     bloqueio da tarefa.
+   - Pipes Síncronos: Buffer circular de 20 palavras com bloqueio automático 
+     de produtores e consumidores.
+   - Memória Compartilhada: Gerenciamento de até 5 regiões de RAM compartilhada 
+     identificadas por chaves únicas.
+   - Mensageria Espartana: IPC assíncrono não-bloqueante de baixíssimo custo 
+     computacional (uma palavra por processo).
 
-5. SINCRONIZAÇÃO
-   - Semáforos Bloqueantes: Implementação de exclusão mútua no Kernel que 
-     suspende processos (STATE_BLOCKED) em caso de contenção.
-   - Mutexes (Spinlocks): Travas de espaço do usuário utilizando espera ativa 
-     mitigada por yield().
+5. SINAIS POSIX E INTERRUPÇÕES DE SOFTWARE
+   - kill(pid, signal): Envio de sinais (SIGKILL, SIGALRM, SIGTERM, SIGCONT).
+   - Stack Spoofing: Injeção de contexto na pilha para execução forçada de 
+     Handlers registrados via signal().
+   - sigreturn(): Syscall fundamental para a restauração do contexto original 
+     após a execução de um Handler.
 
-6. SINAIS POSIX (SOFTWARE INTERRUPTS)
-   - kill(pid, signal): Envio de sinais como SIGKILL e SIGALRM entre processos.
-   - Stack Spoofing: Injeção de contexto na pilha da tarefa alvo para execução 
-     forçada de Handlers registrados via signal().
-   - sigreturn(): Mecanismo de restauração de contexto para retorno seguro do 
-     processo após o tratamento do sinal.
+6. SINCRONIZAÇÃO
+   - Semáforos: Implementação baseada em suspensão de tarefa no Kernel.
+   - Mutexes: Suporte a trancas de espaço do usuário (Ring 1).
+
+
+TABELA DE SYSCALLS (Mapeamento de IDs)
+---------------------------------------
+ID | Função       | Descrição
+---|--------------|-----------------------------------------------------------
+ 1 | exit         | Encerra o processo atual
+ 2 | wait         | Aguarda o término de um PID específico
+ 3 | kill         | Envia sinal para um processo
+ 4 | sem_lock     | Bloqueia acesso via semáforo de Kernel
+ 5 | sem_unlock   | Libera acesso via semáforo de Kernel
+ 6 | spawn        | Cria novo processo dinamicamente
+ 7 | mutex_try    | Tenta obter tranca Mutex (Ring 0 check)
+ 8 | mutex_unlock | Libera tranca Mutex
+ 9 | yield        | Cede voluntariamente a CPU
+10 | print_char   | Saída de caractere para o hardware
+11 | read_char    | Entrada de caractere do teclado
+12 | sleep        | Suspende o processo por N ticks
+13 | alarm        | Agenda sinal SIGALRM para o processo
+14 | pause        | Suspende processo até recepção de sinal
+15 | signal       | Registra Handler de interrupção de software
+16 | sigreturn    | Retorna do contexto de sinal para o original
+17 | get_signal   | Obtém o sinal pendente atual
+20 | write_pipe   | Escreve dado no buffer do Pipe
+21 | read_pipe    | Lê dado do buffer do Pipe
+25 | shmget       | Aloca/Obtém memória compartilhada
+27 | msg_send     | Envia mensagem assíncrona (Espartana)
+28 | msg_recv     | Recebe mensagem assíncrona (Espartana)
 
 ---
 [1] "CompSim - The Computer Simulator" website: http://compsim.crato.ifce.edu.br/
+===============================================================================
