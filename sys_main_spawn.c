@@ -2,13 +2,13 @@
 
 // ESCOLHA O SEU ESCALONADOR AQUI (Comente um e descomente o outro)
 //#include "sys_sched_fp.c"    // Prioridade Fixa
-//#include "sys_sched_rr.c"    // Round-Robin
-#include "sys_sched_dp.c"    // Aging
+#include "sys_sched_rr.c"    // Round-Robin
+//#include "sys_sched_dp.c"    // Aging
 
 #include "sys_mem.c"         
 #include "sys_ipc.c"
 
-#include "usr_tasks_3.c"
+#include "usr_tasks_12.c"
 
 //Globais temporárias par AC e SP
 int isr_tmp_ac;   
@@ -326,17 +326,17 @@ void main() {
     
     // Captura os endereços das funções
     asm("MOV task_a"); asm("STA addr_task_a");
-    asm("MOV task_b"); asm("STA addr_task_b");
+    //~ asm("MOV task_b"); asm("STA addr_task_b");
     
     // Aloca 100 palavras na RAM dinamicamente para cada processo!
     // Nota: Como a pilha cresce para BAIXO, o topo da pilha é (Ponteiro + Tamanho)
     int mem_a, mem_b;
     mem_a = malloc(40);
-    mem_b = malloc(40);
+    //~ mem_b = malloc(40);
     
     // create_process(PID, Função, Base_Pilha, Prioridade, Pont_Memoria)
-    create_process(0, addr_task_a, mem_a + 40, 8, mem_a); // <--- Alta Prioridade
-    create_process(1, addr_task_b, mem_b + 40, 4, mem_b);  // <--- Baixa Prioridade
+    create_process(0, addr_task_a, mem_a + 40, 4, mem_a); // <--- Alta Prioridade
+    //~ create_process(1, addr_task_b, mem_b + 40, 4, mem_b);  // <--- Baixa Prioridade
     
     current_pid = 0;
     curr_pcb = &pcb[0];
