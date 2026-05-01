@@ -1,9 +1,3 @@
-### Filas de Mensagens (Message Queues)
-Você já possui Pipes (que são apenas túneis de bytes) e Memória Compartilhada (que é um bloco bruto). Em SOs modernos, usamos muito a "Troca de Mensagens".
-*   **A Teoria:** IPC por caixas de correio (Mailboxes) não-bloqueantes.
-*   **A Implementação:** Criar as Syscalls `msg_send(PID, valor)` e `msg_recv()`. O Kernel teria um pequeno array bidimensional (ex: `msg_inbox[MAX_PROCESSES][5]`). Quando a Task A quiser avisar a Task B sobre algo, ela "posta" a mensagem no Kernel. A Task B, quando tiver tempo, vai na caixa de entrada ler.
-*   **O Valor:** Introduz comunicação *assíncrona*. Ao contrário do Pipe ou do Semaphore, onde o processo fica bloqueado esperando, a Fila de Mensagens permite que o processo leia a caixa e, se estiver vazia, ele continua trabalhando em outra coisa.
-
 ### O Relógio Vigilante (Watchdog Timer e Profiling)
 No momento, o seu escalonador troca de tarefas de forma justa. Mas o Kernel não sabe o que os processos estão fazendo.
 *   **A Teoria:** Profiling e mitigação de Starvation/Deadlock.
