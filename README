@@ -1,0 +1,68 @@
+===============================================================================
+                   CAFE OS (ESMERIX) - README
+===============================================================================
+
+DESCRIÇÃO
+-----------
+O CAFE OS (ESMERIX) é um Sistema Operacional acadêmico desenvolvido para a 
+arquitetura da processador Cariri, do simulador CompSim[1]. O sistema implementa 
+uma separação rigorosa entre o Kernel Space (Ring 0) e o User Space (Ring 1).
+
+O controle do hardware e a proteção do sistema são garantidos por uma Tabela 
+de Vetores de Interrupção (IVT) densa, gerenciando Hardware Timer, Syscalls 
+(instrução TRAP) e Memory/Privilege Faults.
+
+
+RECURSOS IMPLEMENTADOS
+-----------------------
+
+1. GERENCIAMENTO DE PROCESSOS (TASKS)
+   - Estrutura completa de Process Control Block (PCB) para cada tarefa.
+   - spawn(task_addr, priority): Criação dinâmica de processos com alocação 
+     automática de pilha no Heap.
+   - exit() e wait(pid): Finalização limpa com liberação de memória e 
+     sincronização de processos.
+   - Estados de Processo: RUNNING, READY, BLOCKED, WAITING, SLEEPING e 
+     PAUSED.
+   - Syscalls de Controle: yield(), sleep(ticks) e pause().
+
+2. ESCALONAMENTO MODULAR (SCHEDULING)
+   - Round-Robin: Escalonamento circular com suporte a múltiplos processos.
+   - Time Warp: Recurso de ociosidade inteligente que avança o relógio do 
+     sistema instantaneamente caso não existam tarefas prontas.
+   - Prioridade Dinâmica (Aging): Prevenção de Starvation através do aumento 
+     progressivo da prioridade de tarefas em espera.
+   - Prioridade Fixa: Algoritmo baseado estritamente na precedência definida 
+     no spawn.
+
+3. GERENCIAMENTO DE MEMÓRIA DINÂMICA
+   - malloc(size) e free(ptr): Gerenciador de memória baseado no algoritmo 
+     First-Fit com cabeçalhos dinâmicos.
+   - Defragmentação Ativa (Coalescência): Varredura automática durante o 
+     free() para fundir blocos livres contíguos e prevenir a fragmentação 
+     externa do Heap.
+
+4. COMUNICAÇÃO INTERPROCESSOS (IPC)
+   - Pipes Síncronos: Comunicação baseada em buffer circular (Produtor/Consumidor) 
+     com bloqueio automático (STATE_WAITING_PIPE_READ/WRITE).
+   - Memória Compartilhada (shmget): Alocação de regiões de memória acessíveis 
+     por diferentes processos via chaves únicas.
+   - Fila de Mensagens Assíncrona (Espartana): Sistema de Mailbox de baixíssimo 
+     overhead (uma palavra por PID) para troca de dados e comandos sem 
+     bloqueio da tarefa.
+
+5. SINCRONIZAÇÃO
+   - Semáforos Bloqueantes: Implementação de exclusão mútua no Kernel que 
+     suspende processos (STATE_BLOCKED) em caso de contenção.
+   - Mutexes (Spinlocks): Travas de espaço do usuário utilizando espera ativa 
+     mitigada por yield().
+
+6. SINAIS POSIX (SOFTWARE INTERRUPTS)
+   - kill(pid, signal): Envio de sinais como SIGKILL e SIGALRM entre processos.
+   - Stack Spoofing: Injeção de contexto na pilha da tarefa alvo para execução 
+     forçada de Handlers registrados via signal().
+   - sigreturn(): Mecanismo de restauração de contexto para retorno seguro do 
+     processo após o tratamento do sinal.
+
+---
+[1] "CompSim - The Computer Simulator" website: http://compsim.crato.ifce.edu.br/
