@@ -66,10 +66,10 @@ struct PCB_Struct {
     int sig_saved_step;
 };
 
-int MAX_PROCESSES = 2;
+int MAX_PROCESSES = 3;
 
 // A Tabela de Processos (Array de Structs)
-struct PCB_Struct pcb[2];
+struct PCB_Struct pcb[3];
 
 // Variáveis de Controle
 int current_pid;

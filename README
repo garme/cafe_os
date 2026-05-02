@@ -64,6 +64,17 @@ RECURSOS IMPLEMENTADOS
    - Semáforos: Implementação baseada em suspensão de tarefa no Kernel.
    - Mutexes: Suporte a trancas de espaço do usuário (Ring 1).
 
+7. MULTITHREADING (THREADS DE USUÁRIO)
+   - thread_create(addr, priority): Implementa processos leves que compartilham 
+     o bloco de memória (mem_base) do pai.
+   - Divisão de Pilha: O Kernel particiona dinamicamente o espaço de stack 
+     original para acomodar o novo contexto.
+   - Thread-Safety: Devido à natureza da Toolchain (alocação estática), o 
+     compartilhamento de funções por múltiplas threads exige o uso rigoroso 
+     de semáforos para evitar corrupção de variáveis locais e globais.
+   - Comportamentos Distintos: Suporte à execução concorrente de diferentes 
+     rotinas de código dentro do mesmo domínio de proteção.
+
 
 TABELA DE SYSCALLS (Mapeamento de IDs)
 ---------------------------------------
@@ -91,7 +102,7 @@ ID | Função       | Descrição
 25 | shmget       | Aloca/Obtém memória compartilhada
 27 | msg_send     | Envia mensagem assíncrona (Espartana)
 28 | msg_recv     | Recebe mensagem assíncrona (Espartana)
-
+29 | thread_create | Cria thread compartilhando o Heap/Memória do pai.
 ---
 [1] "CompSim - The Computer Simulator" website: http://compsim.crato.ifce.edu.br/
 ===============================================================================

@@ -1,19 +1,13 @@
+### Um Interpretador de Comandos (O Nascimento do Shell)
+Até agora, os processos (`task_a`, `task_b`) são "chumbados" no código do `os_boot` e iniciados manualmente no Kernel. 
+* **O Recurso:** Criar uma tarefa principal (PID 0) que atue como um Shell. Ela ficaria em um laço infinito usando `readstr()` para ler o teclado.
+* **A Engenharia:** Precisaríamos implementar a famosa syscall **`fork()`** ou **`exec()`** (ou uma versão unificada `spawn()`). O usuário digitaria "lebre" no terminal, e o Shell pediria ao Kernel para alocar memória, carregar o ponteiro da função correspondente e injetar a nova tarefa na fila de Prontos dinamicamente.
+
 ### O Relógio Vigilante (Watchdog Timer e Profiling)
 No momento, o seu escalonador troca de tarefas de forma justa. Mas o Kernel não sabe o que os processos estão fazendo.
 *   **A Teoria:** Profiling e mitigação de Starvation/Deadlock.
 *   **A Implementação:** Adicionar variáveis na sua `PCB_Struct` como `cpu_time_used` e `time_blocked`. Toda vez que o Timer (`sys_main.c`) bater, o Kernel incrementa o tempo de quem está rodando. Se o Kernel notar que um processo está no estado `STATE_BLOCKED` há muito tempo (ex: 50 ticks), o Kernel presume que ocorreu um **Deadlock** (um travamento cruzado de Semáforos) e assassina o processo automaticamente (SIGKILL), imprimindo "Watchdog: Processo travado morto".
 *   **O Valor:** Mostra como o Kernel se protege de programas de usuário mal escritos que travam o sistema.
-
-### Multithreading (Threads de Usuário)
-Nós implementamos o `spawn`, que cria **Processos Pesados**. Um processo tem sua própria pilha, seu próprio espaço de memória no Heap e executa de forma independente. Mas e se quiséssemos criar **Threads** (Processos Leves)?
-*   **A Teoria:** Concorrência com recursos compartilhados nativamente.
-*   **A Implementação:** Criaríamos a Syscall `thread_create(funcao)`. Ao contrário do `spawn`, o Kernel **NÃO** daria um `malloc` novo. Ele criaria uma nova entrada na `pcb[]`, mas o `mem_base` seria apontado exatamente para o mesmo bloco do pai, dividindo a pilha do pai no meio.
-*   **O Valor:** Este é o Santo Graal do aprendizado de concorrência. Como o seu compilador aloca variáveis locais de forma estática, se você rodar duas threads no mesmo programa, elas inevitavelmente colidirão (exatamente como ocorreu no seu teste anterior do terminal). Isso forçará o aluno/usuário a programar usando `sem_lock()` (Mutexes) para tudo que for fazer, ensinando *Thread-Safety* na marra!
-
-### Um Interpretador de Comandos (O Nascimento do Shell)
-Até agora, os processos (`task_a`, `task_b`) são "chumbados" no código do `os_boot` e iniciados manualmente no Kernel. 
-* **O Recurso:** Criar uma tarefa principal (PID 0) que atue como um Shell. Ela ficaria em um laço infinito usando `readstr()` para ler o teclado.
-* **A Engenharia:** Precisaríamos implementar a famosa syscall **`fork()`** ou **`exec()`** (ou uma versão unificada `spawn()`). O usuário digitaria "lebre" no terminal, e o Shell pediria ao Kernel para alocar memória, carregar o ponteiro da função correspondente e injetar a nova tarefa na fila de Prontos dinamicamente.
 
 ### Semáforos de Contagem (O Produtor e Consumidor)
 Neste momento, o seu `kernel_sem_lock()` é um *Semáforo Binário* (funciona exatamente como um Mutex, travando em 0 ou 1). 

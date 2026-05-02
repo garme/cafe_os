@@ -65,7 +65,7 @@ void main() {
     asm("SOP POP_OP"); asm("STA tmp_sys_arg");
     
     // Extrai mais um arg da pilha, se for kill (3), spawn (6), shmget (25) ou msg_send (27)
-    if (tmp_sys_id == 3 || tmp_sys_id == 6 || tmp_sys_id == 25 || tmp_sys_id == 27) {
+    if (tmp_sys_id == 3 || tmp_sys_id == 6 || tmp_sys_id == 25 || tmp_sys_id == 27 || tmp_sys_id == 29) {
         asm("SOP POP_OP"); asm("STA tmp_sys_arg2"); 
     }
 
@@ -217,6 +217,11 @@ void main() {
     // ID 28: msg_recv()
     if (tmp_sys_id == 28) {
         isr_tmp_ac = kernel_msg_recv(); // Sem argumentos!
+        curr_pcb->ac = isr_tmp_ac;
+    }
+    // ID 29: Cria uma thread
+    if (tmp_sys_id == 29) {
+        isr_tmp_ac = kernel_thread_create(tmp_sys_arg, tmp_sys_arg2);
         curr_pcb->ac = isr_tmp_ac;
     }
 
