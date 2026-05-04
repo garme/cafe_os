@@ -1,11 +1,11 @@
 ===============================================================================
-                   CAFE OS (ESMERIX) - README
+                   CAFE OS (GUILIX) - README
 ===============================================================================
 
 DESCRIÇÃO
 -----------
 O CAFE OS (Configurable And Flexible Environment Operating System), codinome 
-"ESMERIX", é um Sistema Operacional acadêmico desenvolvido para a arquitetura 
+"GUILIX", é um Sistema Operacional acadêmico desenvolvido para a arquitetura 
 do processador Cariri do simulador CompSim[1]. O sistema opera em uma CPU de 
 16-bits (Word-Addressable e Single-Cycle), implementando uma separação rigorosa 
 entre o Kernel Space (Ring 0) e o User Space (Ring 1).
