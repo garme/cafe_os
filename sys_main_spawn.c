@@ -8,7 +8,9 @@
 #include "sys_mem.c"         
 #include "sys_ipc.c"
 
-#include "usr_tasks_14.c"
+#include "usr_tasks_12.c"
+//#include "usr_tasks_13.c"
+//#include "usr_tasks_14.c"
 
 //Globais temporárias par AC e SP
 int isr_tmp_ac;   
