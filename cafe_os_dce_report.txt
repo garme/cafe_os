@@ -1,0 +1,76 @@
+=================================================================
+         CAFE OS (ESMERIX) - RELATÓRIO DE OTIMIZAÇÃO DCE
+=================================================================
+Total de funções originais analisadas : 62
+Total de funções mantidas no binário  : 14
+Total de funções podadas (mortas)     : 48
+
+=================================================================
+--- FUNÇÕES PODADAS (REMOVIDAS DO KERNEL E USER SPACE) ---
+=================================================================
+ [-] alarm
+ [-] exit
+ [-] get_signal
+ [-] init_ipc_mailbox
+ [-] init_ipc_shm
+ [-] kernel_alarm
+ [-] kernel_exit
+ [-] kernel_get_signal
+ [-] kernel_msg_recv
+ [-] kernel_msg_send
+ [-] kernel_mutex_trylock
+ [-] kernel_mutex_unlock
+ [-] kernel_pause
+ [-] kernel_read_pipe
+ [-] kernel_sem_lock
+ [-] kernel_sem_unlock
+ [-] kernel_shmget
+ [-] kernel_signal
+ [-] kernel_sigreturn
+ [-] kernel_sleep
+ [-] kernel_spawn
+ [-] kernel_thread_create
+ [-] kernel_wait
+ [-] kernel_write_pipe
+ [-] kill
+ [-] msg_recv
+ [-] msg_send
+ [-] mutex_lock
+ [-] mutex_unlock
+ [-] pause
+ [-] printint
+ [-] printstr
+ [-] read_pipe
+ [-] readint
+ [-] readstr
+ [-] sem_lock
+ [-] sem_unlock
+ [-] shmget
+ [-] signal
+ [-] sigreturn
+ [-] sleep
+ [-] spawn
+ [-] sys_mutex_trylock
+ [-] thread_create
+ [-] wait
+ [-] wakeup_all
+ [-] write_pipe
+ [-] yield
+
+=================================================================
+--- FUNÇÕES MANTIDAS (COMPILADAS NO BINÁRIO FINAL) ---
+=================================================================
+ [+] create_process
+ [+] free
+ [+] init_heap
+ [+] kernel_defrag
+ [+] kernel_kill
+ [+] kernel_print_char
+ [+] kernel_read_char
+ [+] main
+ [+] malloc
+ [+] print_char
+ [+] read_char
+ [+] schedule
+ [+] task_a
+ [+] wakeup_waiters
