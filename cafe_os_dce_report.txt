@@ -1,9 +1,9 @@
 =================================================================
          CAFE OS (ESMERIX) - RELATÓRIO DE OTIMIZAÇÃO DCE
 =================================================================
-Total de funções originais analisadas : 62
-Total de funções mantidas no binário  : 14
-Total de funções podadas (mortas)     : 48
+Total de funções originais analisadas : 63
+Total de funções mantidas no binário  : 19
+Total de funções podadas (mortas)     : 44
 
 =================================================================
 --- FUNÇÕES PODADAS (REMOVIDAS DO KERNEL E USER SPACE) ---
@@ -21,9 +21,8 @@ Total de funções podadas (mortas)     : 48
  [-] kernel_mutex_trylock
  [-] kernel_mutex_unlock
  [-] kernel_pause
+ [-] kernel_read_char
  [-] kernel_read_pipe
- [-] kernel_sem_lock
- [-] kernel_sem_unlock
  [-] kernel_shmget
  [-] kernel_signal
  [-] kernel_sigreturn
@@ -38,13 +37,10 @@ Total de funções podadas (mortas)     : 48
  [-] mutex_lock
  [-] mutex_unlock
  [-] pause
- [-] printint
- [-] printstr
+ [-] read_char
  [-] read_pipe
  [-] readint
  [-] readstr
- [-] sem_lock
- [-] sem_unlock
  [-] shmget
  [-] signal
  [-] sigreturn
@@ -66,11 +62,16 @@ Total de funções podadas (mortas)     : 48
  [+] kernel_defrag
  [+] kernel_kill
  [+] kernel_print_char
- [+] kernel_read_char
+ [+] kernel_sem_lock
+ [+] kernel_sem_unlock
  [+] main
  [+] malloc
  [+] print_char
- [+] read_char
+ [+] printint
+ [+] printstr
  [+] schedule
+ [+] sem_lock
+ [+] sem_unlock
  [+] task_a
+ [+] task_b
  [+] wakeup_waiters

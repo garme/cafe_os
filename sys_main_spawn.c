@@ -335,8 +335,8 @@ void main() {
     
     // --- DESBLOQUEIO DE HARDWARE (SEGMENTO DE PILHA) ---
     // Avisa a CPU que as pilhas podem viver em qualquer lugar da RAM (Heap)
-    asm("MOV 0"); 
-    asm("MOV -$SS");
+//    asm("MOV 0"); 
+//    asm("MOV -$SS");
     
     ram = (int*) 0; 
     
