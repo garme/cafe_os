@@ -12,6 +12,7 @@
 ![Kernel](https://img.shields.io/badge/kernel-seletivo-27ae60?style=for-the-badge)
 ![Overlays](https://img.shields.io/badge/apps-overlays-f39c12?style=for-the-badge)
 ![IDE](https://img.shields.io/badge/build-IDE%20integrada-9b59b6?style=for-the-badge)
+![Scheduling](https://img.shields.io/badge/scheduling-RR%20%7C%20FP%20%7C%20Aging-e67e22?style=for-the-badge)
 
 </div>
 
@@ -89,6 +90,8 @@ SO/kernel/
 ├── sys_core.h
 ├── sys_mem.c
 ├── sys_sched_rr.c
+├── sys_sched_fp.c
+├── sys_sched_dp.c
 ├── sys_overlay.c
 ├── sys_proc_exit.c
 ├── sys_proc_wait.c
@@ -105,23 +108,100 @@ SO/kernel/
 └── sys_io.c
 ```
 
-### 🔁 Escalonamento Round-Robin
+### 🔁 Escalonamento configurável
 
-O escalonador principal percorre a tabela de processos e seleciona o próximo processo em estado `READY`.
+O CAFE OS / GUILIX possui uma camada de escalonamento modular. O kernel mantém uma única função pública de escalonamento, `schedule()`, mas a implementação pode ser trocada incluindo um dos módulos disponíveis em `SO/kernel/`.
 
-Estados suportados:
+<div align="center">
 
-| Estado | Significado |
-|---|---|
-| `READY` | Processo pronto para executar |
-| `RUNNING` | Processo em execução |
-| `BLOCKED` | Bloqueado por sincronização |
-| `TERMINATED` | Finalizado |
-| `WAITING` | Aguardando outro processo |
-| `SLEEPING` | Dormindo por número de ticks |
-| `PAUSED` | Pausado até receber sinal |
-| `WAITING_PIPE_READ` | Aguardando leitura em pipe |
-| `WAITING_PIPE_WRITE` | Aguardando escrita em pipe |
+| Arquivo | Política | Ideia central | Uso didático |
+|---|---|---|---|
+| `sys_sched_rr.c` | **Round-Robin** | alterna circularmente entre processos `READY` | justiça simples e multiprogramação básica |
+| `sys_sched_fp.c` | **Prioridade Fixa** | escolhe o processo pronto com maior `priority` | estudo de prioridade e risco de starvation |
+| `sys_sched_dp.c` | **Prioridade Dinâmica com Aging** | usa `priority + age` para favorecer quem espera | prioridade com mitigação de starvation |
+
+</div>
+
+#### 🌀 Round-Robin — `sys_sched_rr.c`
+
+É o escalonador padrão recomendado para testes gerais. Ele percorre circularmente a tabela de PCBs, a partir do processo atual, até encontrar o próximo processo em estado `READY`.
+
+Características:
+
+- simples, previsível e adequado para depuração;
+- distribui a CPU entre processos prontos;
+- combina bem com `yield()`, `sleep()`, pipes, sinais e overlays simples;
+- usa *time warp* quando todos os processos estão dormindo ou bloqueados, avançando `system_ticks` até alguém ficar pronto.
+
+#### 🏁 Prioridade Fixa — `sys_sched_fp.c`
+
+Seleciona sempre o processo `READY` com maior valor de `priority`. Em caso de empate, vence o primeiro encontrado na tabela de processos.
+
+Características:
+
+- favorece tarefas críticas com prioridade maior;
+- útil para demonstrar inversão de prioridade e starvation;
+- processos de baixa prioridade podem demorar muito para executar se houver processos de alta prioridade sempre prontos;
+- também possui *time warp* para acordar processos em `SLEEPING` e tratar alarmes quando a CPU ficaria ociosa.
+
+#### 🌱 Prioridade Dinâmica com Aging — `sys_sched_dp.c`
+
+Calcula uma prioridade efetiva para cada processo pronto:
+
+```text
+effective_priority = priority + age
+```
+
+A cada ciclo de busca, processos `READY` que continuam esperando aumentam seu `age`. Quando um processo ganha a CPU, seu `age` volta para zero.
+
+Características:
+
+- mantém a noção de prioridade;
+- reduz o risco de starvation;
+- favorece gradualmente processos que esperaram mais tempo;
+- é o melhor escalonador para demonstrar políticas adaptativas.
+
+#### ⚙️ Como escolher o escalonador
+
+No kernel, mantenha **apenas um** escalonador ativo por vez:
+
+```c
+// Escalonador padrão
+#include "kernel/sys_sched_rr.c"
+
+// Alternativas:
+// #include "kernel/sys_sched_fp.c"
+// #include "kernel/sys_sched_dp.c"
+```
+
+> ✅ A troca do escalonador não exige alterar os overlays. As aplicações continuam usando `main()`, `yield()`, `sleep()`, `wait()`, `exit()` e demais syscalls normalmente.
+
+#### 📌 Estados de processo suportados
+
+| Estado | Significado | Impacto no escalonamento |
+|---|---|---|
+| `READY` | Processo pronto para executar | candidato à CPU |
+| `RUNNING` | Processo em execução | volta para `READY` ao ser despromovido |
+| `BLOCKED` | Bloqueado por sincronização | ignorado até ser acordado |
+| `TERMINATED` | Finalizado | ignorado definitivamente |
+| `WAITING` | Aguardando outro processo | acorda quando o alvo termina |
+| `SLEEPING` | Dormindo por número de ticks | acorda quando `system_ticks >= wakeup_tick` |
+| `PAUSED` | Pausado até receber sinal | acorda com sinal apropriado |
+| `WAITING_PIPE_READ` | Aguardando leitura em pipe | acorda quando houver dado |
+| `WAITING_PIPE_WRITE` | Aguardando escrita em pipe | acorda quando houver espaço |
+
+#### 🧪 Testando políticas de escalonamento
+
+Sugestões de testes:
+
+| Cenário | Escalonador recomendado | O que observar |
+|---|---|---|
+| Dois contadores infinitos | `sys_sched_rr.c` | alternância regular entre processos |
+| Processos com prioridades diferentes | `sys_sched_fp.c` | preferência por maior prioridade |
+| Processo de baixa prioridade esperando muito | `sys_sched_dp.c` | aumento gradual da chance de execução |
+| Apps com `sleep()` | qualquer um | avanço de `system_ticks` e reativação por tick |
+| Apps com `wait()` e `exit()` | qualquer um | mudança de `WAITING` para `READY` |
+
 
 ### 🧠 Gerenciamento de processos
 
