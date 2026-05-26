@@ -1,0 +1,12 @@
+Otimização AST (overlay): 0 funções não utilizadas foram removidas.
+Otimização AST (kernel): 0 funções não utilizadas foram removidas.
+app_hello: syscalls=[1, 9, 10] names=['exit', 'yield', 'print_char'] asm_lines=2916 assemble=Ok words=4733
+Otimização AST (overlay): 0 funções não utilizadas foram removidas.
+Otimização AST (kernel): 0 funções não utilizadas foram removidas.
+app_counter: syscalls=[1, 9, 10, 12] names=['exit', 'yield', 'print_char', 'sleep'] asm_lines=3218 assemble=Ok words=4929
+Otimização AST (overlay): 0 funções não utilizadas foram removidas.
+Otimização AST (overlay): 0 funções não utilizadas foram removidas.
+Otimização AST (kernel): 0 funções não utilizadas foram removidas.
+hello+counter: syscalls=[1, 9, 10, 12] names=['exit', 'yield', 'print_char', 'sleep'] asm_lines=3241 assemble=Ok words=5072
+Otimização AST (kernel): 0 funções não utilizadas foram removidas.
+kernel_isolado_lines= 5966

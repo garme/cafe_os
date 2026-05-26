@@ -1,0 +1,12 @@
+Validação executada durante a reorganização:
+
+1. Kernel:
+   compile_file_to_asm('KERNEL.c', mode='kernel') OK
+
+2. Overlays:
+   compile_file_to_asm('apps/app_hello.c', mode='overlay') OK
+   compile_file_to_asm('apps/app_counter.c', mode='overlay') OK
+
+3. Kernel+Overlay:
+   build_kernel_with_overlays('KERNEL.c', ['apps/app_counter.c']) OK
+   final_os_test.asm montado pelo AssemblerCariri OK
