@@ -85,7 +85,7 @@ int kernel_spawn_overlay(int overlay_img, int priority) {
         text_size = ram[overlay_img + 4];
         data_size = ram[overlay_img + 5];
         bss_size = 0;
-        stack_size = 40;
+        stack_size = 192;
         header_size = 6;
     } else {
         entry_pc = ram[overlay_img + 2];
@@ -93,7 +93,7 @@ int kernel_spawn_overlay(int overlay_img, int priority) {
         data_size = ram[overlay_img + 4];
         bss_size = ram[overlay_img + 5];
         stack_size = ram[overlay_img + 6];
-        if (stack_size == 0) { stack_size = 40; }
+        if (stack_size == 0) { stack_size = 192; }
         header_size = OVERLAY_HEADER_SIZE;
     }
 

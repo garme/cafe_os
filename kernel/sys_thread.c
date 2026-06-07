@@ -25,12 +25,18 @@ int kernel_thread_create(int task_addr, int priority) {
     // 2. Recupera a base de memória compartilhada do processo pai
     shared_mem = curr_pcb->mem_base;
     
-    // 3. CÁLCULO DO TAMANHO DA PILHA (Fatiamento de 20 palavras)
-    // Se PID 0 é o pai, o topo da pilha é shared_mem + 60.
-    // Se PID 1 é a Thread 1, o topo da pilha é shared_mem + 40.
-    // Se PID 2 é a Thread 2, o topo da pilha é shared_mem + 20.
-    stack_offset = free_pid * 20;
-    stack_offset = 60 - stack_offset;
+    // 3. CÁLCULO DO TOPO DA PILHA DA THREAD.
+    // IMPORTANTE: use literais numéricos aqui.
+    // O compilador atual gera código mais seguro para multiplicação por constante.
+    // Evite "free_pid * THREAD_STACK_WORDS" enquanto a multiplicação genérica
+    // não for corrigida no codegen.
+    //
+    // Com MAX_PROCESSES=3 e fatias de 64 palavras:
+    //   PID 0 / processo principal: shared_mem + 192
+    //   PID 1 / thread 1:          shared_mem + 128
+    //   PID 2 / thread 2:          shared_mem + 64
+    stack_offset = free_pid * 64;
+    stack_offset = 192 - stack_offset;
     
     // 4. Montagem da thread
     // O SP inicial será shared_mem + stack_offset

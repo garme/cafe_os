@@ -1,0 +1,54 @@
+=================================================================
+          CAFE OS (GUILIX) - RELATÓRIO DE OTIMIZAÇÃO DCE
+=================================================================
+Total de funções originais analisadas : 40
+Total de funções mantidas no binário  : 12
+Total de funções podadas (mortas)     : 28
+
+=================================================================
+--- FUNÇÕES PODADAS (REMOVIDAS DO KERNEL E USER SPACE) ---
+=================================================================
+ [-] create_process
+ [-] create_process_overlay
+ [-] init_ipc_mailbox
+ [-] init_ipc_shm
+ [-] kernel_alarm
+ [-] kernel_exit
+ [-] kernel_get_signal
+ [-] kernel_msg_recv
+ [-] kernel_msg_send
+ [-] kernel_mutex_trylock
+ [-] kernel_mutex_unlock
+ [-] kernel_pause
+ [-] kernel_print_char
+ [-] kernel_read_char
+ [-] kernel_read_pipe
+ [-] kernel_sem_lock
+ [-] kernel_sem_unlock
+ [-] kernel_shmget
+ [-] kernel_signal
+ [-] kernel_sigreturn
+ [-] kernel_sleep
+ [-] kernel_spawn
+ [-] kernel_spawn_overlay
+ [-] kernel_thread_create
+ [-] kernel_wait
+ [-] kernel_write_pipe
+ [-] malloc
+ [-] wakeup_all
+
+=================================================================
+--- FUNÇÕES MANTIDAS (COMPILADAS NO BINÁRIO FINAL) ---
+=================================================================
+ [+] boot_overlays
+ [+] free
+ [+] init_heap
+ [+] init_kernel_services
+ [+] kernel_defrag
+ [+] kernel_dispatch_syscall
+ [+] kernel_kill
+ [+] kernel_signal_inject
+ [+] kernel_tick_update
+ [+] main
+ [+] schedule
+ [+] wakeup_waiters

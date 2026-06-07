@@ -78,6 +78,18 @@ struct PCB_Struct {
 
 int MAX_PROCESSES = 3;
 
+// --- PILHAS DE PROCESSO/THREAD EM OVERLAYS ---
+// Cada overlay usa uma arena única de pilhas alocada no heap do kernel.
+// Com MAX_PROCESSES=3, a arena comporta:
+//   PID 0 / processo principal: topo em mem_base + 192
+//   PID 1 / thread 1:          topo em mem_base + 128
+//   PID 2 / thread 2:          topo em mem_base + 64
+// create_process()/create_process_overlay() ainda consomem 11 palavras
+// para o frame inicial, então 64 palavras por slot é um mínimo seguro para
+// testes com printstr/printint/sem_lock/sem_unlock/yield.
+int THREAD_STACK_WORDS = 64;
+int THREAD_STACK_AREA_WORDS = 192;
+
 // A Tabela de Processos (Array de Structs)
 struct PCB_Struct pcb[3];
 
