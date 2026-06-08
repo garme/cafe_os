@@ -2,13 +2,19 @@
 #define SYS_PROC_SPAWN_C
 
 /*
- * Versão compatível com overlays.
- * A versão antiga criava processos legados sempre com CS/DS do kernel.
- * Para spawn/thread_create a partir de uma aplicação overlay, o filho precisa
- * herdar CS e DS do processo chamador, pois task_addr é um offset dentro do
- * código do próprio overlay.
+ * Criação de processo lógico no mesmo overlay.
+ *
+ * spawn(task_addr, priority) cria uma tarefa independente quanto a PID,
+ * estado, escalonamento, wait()/kill() e pilha. Como a arquitetura atual
+ * mantém apenas 4K de dados e não há MMU/cópia de .data, o filho herda
+ * CS/DS do processo chamador. Portanto, globais do overlay continuam no
+ * mesmo domínio de dados. Para processo isolado por imagem, use overlay.
+ *
+ * Diferença importante para thread_create():
+ *   - spawn(): mem_base próprio e pilha própria;
+ *   - thread_create(): mem_base herdado do pai e pilha própria.
  */
-void create_process(int pid, int task_addr, int stack_base, int priority, int mem_base) {
+void create_process(int pid, int task_addr, int stack_base, int priority, int mem_base, int stack_mem, int is_thread) {
     struct PCB_Struct *p;
     int *sp_ptr;
 
@@ -23,6 +29,8 @@ void create_process(int pid, int task_addr, int stack_base, int priority, int me
     p->priority = priority;
     p->age = 0;
     p->mem_base = mem_base;
+    p->stack_mem = stack_mem;
+    p->is_thread = is_thread;
     p->waiting_for_pid = -1;
     p->wakeup_tick = 0;
     p->alarm_tick = 0;
@@ -62,9 +70,12 @@ void create_process(int pid, int task_addr, int stack_base, int priority, int me
 }
 
 int kernel_spawn(int task_addr, int priority) {
-    int i = 0;
-    int free_pid = -1;
-    int mem;
+    int i;
+    int free_pid;
+    int stack_mem;
+
+    i = 0;
+    free_pid = -1;
 
     while (i < MAX_PROCESSES && free_pid == -1) {
         if (pcb[i].state == STATE_TERMINATED) {
@@ -77,12 +88,15 @@ int kernel_spawn(int task_addr, int priority) {
         return -1;
     }
 
-    mem = malloc(40);
-    if (mem == 0) {
+    // 64 palavras por tarefa. Use literal para evitar a multiplicação genérica
+    // por variável no codegen atual.
+    stack_mem = malloc(64);
+    if (stack_mem == 0) {
         return -1;
     }
 
-    create_process(free_pid, task_addr, mem + 40, priority, mem);
+    // Processo lógico: pilha própria e mem_base próprio.
+    create_process(free_pid, task_addr, stack_mem + 64, priority, stack_mem, stack_mem, 0);
     return free_pid;
 }
 

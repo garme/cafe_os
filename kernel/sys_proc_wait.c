@@ -5,6 +5,7 @@ void kernel_wait(int target_pid) {
     if (pcb[target_pid].state != STATE_TERMINATED) {
         curr_pcb->state = STATE_WAITING;
         curr_pcb->waiting_for_pid = target_pid;
+        kernel_need_resched = 1;
     }
 }
 

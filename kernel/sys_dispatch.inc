@@ -18,7 +18,7 @@ void kernel_dispatch_syscall() {
         curr_pcb->ac = isr_tmp_ac;
     }
     if (tmp_sys_id == 8) { kernel_mutex_unlock(); }
-    if (tmp_sys_id == 9) { }
+    if (tmp_sys_id == 9) { kernel_need_resched = 1; }
     if (tmp_sys_id == 10) { kernel_print_char(tmp_sys_arg); }
     if (tmp_sys_id == 11) {
         isr_tmp_ac = kernel_read_char();

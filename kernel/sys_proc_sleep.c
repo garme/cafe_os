@@ -4,6 +4,7 @@
 void kernel_sleep(int ticks_to_sleep) {
     curr_pcb->wakeup_tick = system_ticks + ticks_to_sleep;
     curr_pcb->state = STATE_SLEEPING;
+    kernel_need_resched = 1;
 }
 
 void kernel_alarm(int ticks) {
@@ -16,6 +17,7 @@ void kernel_alarm(int ticks) {
 
 void kernel_pause() {
     curr_pcb->state = STATE_PAUSED;
+    kernel_need_resched = 1;
 }
 
 #endif

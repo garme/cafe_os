@@ -104,9 +104,16 @@ void main() {
     curr->ac = isr_tmp_ac;
     curr->sp = isr_tmp_sp;
 
-    // --- LÓGICA DE TEMPO E SINAIS ---
-    kernel_tick_update();
-    // -------------------------------------
+    // Syscalls leves não devem forçar escalonamento.
+    // O dispatcher/serviço marca kernel_need_resched quando bloquear,
+    // finalizar, acordar alguém ou executar yield().
+    kernel_need_resched = 0;
+
+    // A syscall yield() é intencionalmente vazia no dispatcher.
+    // Marcamos aqui para funcionar também quando a IDE gerar um dispatcher seletivo.
+    if (tmp_sys_id == 9) {
+        kernel_need_resched = 1;
+    }
 
     // =================================================================
     // Agora estamos 100% seguros em Kernel Space!
@@ -115,9 +122,10 @@ void main() {
     // =================================================================
     kernel_dispatch_syscall();
 
-    // 6. Resolução da Syscall: Força o escalonador a atuar e salta para o fluxo de restauro
-    schedule(); 
-    
+    if (kernel_need_resched == 1) {
+        schedule();
+    }
+
     asm("JMP dispatcher_restore_context");
     
     // =======================================================
@@ -146,6 +154,8 @@ void main() {
     curr_pcb->ac = isr_tmp_ac;
     curr_pcb->sp = isr_tmp_sp;
 
+    // O relógio lógico avança no timer, não em toda syscall.
+    kernel_tick_update();
     schedule(); 
     
     // Rótulo de reentrada (Aproveitado pelo Fault e Syscall se precisarem)

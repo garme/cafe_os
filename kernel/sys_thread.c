@@ -5,43 +5,36 @@
 // --- Criação de Threads (Processos Leves) ---
 //----------------------------------------------------------------------
 int kernel_thread_create(int task_addr, int priority) {
-    int i = 0;
-    int free_pid = -1;
+    int i;
+    int free_pid;
     int shared_mem;
-    int stack_offset;
-    
-    // 1. Procura um PID livre (Terminado)
+    int stack_mem;
+
+    i = 0;
+    free_pid = -1;
+
     while (i < MAX_PROCESSES && free_pid == -1) {
         if (pcb[i].state == STATE_TERMINATED) {
             free_pid = i;
         }
         i = i + 1;
     }
-    
+
     if (free_pid == -1) {
         return -1;
     }
-    
-    // 2. Recupera a base de memória compartilhada do processo pai
+
+    // Thread compartilha o domínio de memória do pai, mas NUNCA a pilha.
     shared_mem = curr_pcb->mem_base;
-    
-    // 3. CÁLCULO DO TOPO DA PILHA DA THREAD.
-    // IMPORTANTE: use literais numéricos aqui.
-    // O compilador atual gera código mais seguro para multiplicação por constante.
-    // Evite "free_pid * THREAD_STACK_WORDS" enquanto a multiplicação genérica
-    // não for corrigida no codegen.
-    //
-    // Com MAX_PROCESSES=3 e fatias de 64 palavras:
-    //   PID 0 / processo principal: shared_mem + 192
-    //   PID 1 / thread 1:          shared_mem + 128
-    //   PID 2 / thread 2:          shared_mem + 64
-    stack_offset = free_pid * 64;
-    stack_offset = 192 - stack_offset;
-    
-    // 4. Montagem da thread
-    // O SP inicial será shared_mem + stack_offset
-    create_process(free_pid, task_addr, shared_mem + stack_offset, priority, shared_mem);
-    
+
+    // Pilha própria de 64 palavras. Literal intencional por limitação atual
+    // do codegen em multiplicação por variável simbólica.
+    stack_mem = malloc(64);
+    if (stack_mem == 0) {
+        return -1;
+    }
+
+    create_process(free_pid, task_addr, stack_mem + 64, priority, shared_mem, stack_mem, 1);
     return free_pid;
 }
 
