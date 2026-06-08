@@ -30,6 +30,22 @@ Nesse modelo, o kernel evolui de forma independente das aplicações. Cada aplic
 
 ---
 
+## 🧱 Perfil atual de execução
+
+A versão atual documentada neste README usa um perfil conservador para manter compatibilidade com a arquitetura segmentada da CPU Cariri:
+
+| Recurso | Limite adotado |
+|---|---:|
+| Código por segmento (`CS`) | 4K palavras |
+| Dados + heap + pilhas (`DS/SS`) | 4K palavras |
+| Tarefas simultâneas | 3 |
+| Pilha padrão por tarefa | 64 palavras |
+| Heap do kernel | 512 palavras |
+
+Esse perfil favorece previsibilidade durante a simulação e reduz o risco de colisão entre dados, heap, pilhas e imagens de overlays.
+
+---
+
 ## 🎯 Objetivos do projeto
 
 O CAFE OS / GUILIX foi pensado como um ambiente didático para estudar, implementar e testar:
@@ -37,12 +53,12 @@ O CAFE OS / GUILIX foi pensado como um ambiente didático para estudar, implemen
 | Área | O que o projeto permite explorar |
 |---|---|
 | **Kernel** | boot, dispatcher, syscalls, processos e serviços internos |
-| **Processos** | PCB, estados, escalonamento e troca de contexto lógica |
-| **Memória** | heap dinâmico, alocação, liberação e desfragmentação |
+| **Processos** | PCB, estados, escalonamento, troca de contexto e `spawn()` com `.data` privada |
+| **Memória** | heap dinâmico, pilhas de tarefas, cópia privada de dados e desfragmentação |
 | **IPC** | pipes, memória compartilhada e mensageria simples |
 | **Sincronização** | semáforo, mutex/spinlock e yield cooperativo |
 | **Sinais** | `signal()`, `sigreturn()`, `pause()`, `alarm()` e `kill()` |
-| **Threads** | criação experimental de fluxos que compartilham memória |
+| **Threads** | `thread_create()` com memória compartilhada e `thread_exit()` para encerramento seguro |
 | **Compilador** | geração de ASM, otimização e kernel seletivo |
 | **Userland** | aplicações independentes em formato overlay |
 
@@ -88,6 +104,7 @@ Principais módulos:
 SO/kernel/
 ├── sys_main.c
 ├── sys_core.h
+├── sys_proc.c
 ├── sys_mem.c
 ├── sys_sched_rr.c
 ├── sys_sched_fp.c
@@ -105,6 +122,7 @@ SO/kernel/
 ├── sys_shm.c
 ├── sys_msg.c
 ├── sys_thread.c
+├── sys_thread_exit.c
 └── sys_io.c
 ```
 
@@ -203,9 +221,19 @@ Sugestões de testes:
 | Apps com `wait()` e `exit()` | qualquer um | mudança de `WAITING` para `READY` |
 
 
-### 🧠 Gerenciamento de processos
+### 🧠 Gerenciamento de processos e tarefas
 
-O sistema utiliza uma tabela de **PCBs** (*Process Control Blocks*), onde cada processo possui estado, contexto, prioridade, dados de espera, sinais pendentes e informações relacionadas à execução em overlay.
+O sistema utiliza uma tabela de **PCBs** (*Process Control Blocks*). Cada entrada representa uma tarefa escalonável, isto é, algo que pode receber a CPU: processo principal de overlay, processo criado por `spawn()` ou thread criada por `thread_create()`.
+
+No perfil atual, o CAFE OS trabalha de forma conservadora com:
+
+```text
+máximo de tarefas simultâneas: 3
+código por segmento: até 4K palavras
+dados + heap + pilhas por segmento: até 4K palavras
+pilha padrão por tarefa: 64 palavras
+heap padrão do kernel: 512 palavras
+```
 
 Chamadas principais:
 
@@ -214,8 +242,138 @@ exit();
 wait(pid);
 kill(pid, signal);
 yield();
-spawn(...);
+spawn(task_addr, priority);
+thread_create(task_addr, priority);
+thread_exit();
 ```
+
+#### 🧬 Processo criado com `spawn()`
+
+`spawn()` cria um **processo lógico**. O filho recebe PID próprio, pilha própria e uma cópia privada da área `.data` do pai. O código é compartilhado, mas os dados globais passam a ser independentes.
+
+```mermaid
+flowchart TD
+    A[Processo pai em execução] --> B[spawn task_addr, priority]
+    B --> C[Kernel procura PCB livre]
+    C --> D[Aloca pilha própria no heap]
+    D --> E[Aloca bloco para clone da .data]
+    E --> F[Copia .data do pai para o filho]
+    F --> G[Cria PCB do filho]
+    G --> H[Filho: mesmo CS do pai]
+    G --> I[Filho: novo DS apontando para .data clonada]
+    G --> J[Filho: SS/SP próprios]
+    H --> K[Processo filho READY]
+    I --> K
+    J --> K
+```
+
+Resumo:
+
+| Recurso | `spawn()` |
+|---|---|
+| PID próprio | Sim |
+| Pilha própria | Sim |
+| Código (`CS`) | Compartilhado com o pai |
+| Dados (`DS`) | Privados, clonados da `.data` do pai |
+| Globais C | Independentes após o clone |
+| Encerramento | `exit()` |
+| Uso recomendado | processo lógico, tarefa independente, teste de isolamento de dados |
+
+#### 🧵 Thread criada com `thread_create()`
+
+`thread_create()` cria uma **thread leve**. A thread recebe PID próprio e pilha própria, mas compartilha o mesmo domínio de dados do processo pai. Isso significa que variáveis globais são compartilhadas intencionalmente.
+
+```mermaid
+flowchart TD
+    A[Processo pai em execução] --> B[thread_create task_addr, priority]
+    B --> C[Kernel procura PCB livre]
+    C --> D[Aloca pilha própria no heap]
+    D --> E[Cria PCB da thread]
+    E --> F[Thread: mesmo CS do pai]
+    E --> G[Thread: mesmo DS do pai]
+    E --> H[Thread: SS/SP próprios]
+    F --> I[Thread READY]
+    G --> I
+    H --> I
+```
+
+Resumo:
+
+| Recurso | `thread_create()` |
+|---|---|
+| PID próprio | Sim |
+| Pilha própria | Sim |
+| Código (`CS`) | Compartilhado com o pai |
+| Dados (`DS`) | Compartilhados com o pai |
+| Globais C | Compartilhadas |
+| Encerramento | `thread_exit()` |
+| Uso recomendado | produtor/consumidor, tarefas cooperativas, fluxos concorrentes sobre os mesmos dados |
+
+#### 📊 Comparação visual: `spawn()` versus `thread_create()`
+
+```mermaid
+flowchart LR
+    subgraph PAI[Processo pai]
+        PCS[CS pai]
+        PDS[DS pai<br/>globais do pai]
+        PSTK[Pilha pai]
+    end
+
+    subgraph SPAWN[Filho criado por spawn]
+        SCS[CS compartilhado]
+        SDS[Novo DS<br/>clone da .data]
+        SSTK[Nova pilha]
+    end
+
+    subgraph THREAD[Thread criada por thread_create]
+        TCS[CS compartilhado]
+        TDS[Mesmo DS do pai]
+        TSTK[Nova pilha]
+    end
+
+    PCS -. mesmo código .-> SCS
+    PCS -. mesmo código .-> TCS
+    PDS -. cópia no spawn .-> SDS
+    PDS -. compartilhamento real .-> TDS
+```
+
+#### 🧱 Mapa lógico de memória
+
+```mermaid
+flowchart TB
+    subgraph MEM[DS/SS lógico da tarefa]
+        D0[.data / globais]
+        D1[heap do kernel]
+        D2[pilhas alocadas por malloc]
+        D3[blocos de memória compartilhada]
+    end
+
+    subgraph PROC[Processo via spawn]
+        P1[DS próprio]
+        P2[stack_mem próprio]
+    end
+
+    subgraph THR[Thread]
+        T1[DS herdado do pai]
+        T2[stack_mem próprio]
+    end
+
+    D0 --> P1
+    D2 --> P2
+    D0 --> T1
+    D2 --> T2
+```
+
+#### 🧾 Regras de encerramento
+
+| Chamada | Quem deve usar | O que libera |
+|---|---|---|
+| `exit()` | processo principal ou processo criado por `spawn()` | pilha própria e, quando aplicável, `.data` privada |
+| `thread_exit()` | thread criada por `thread_create()` | somente a pilha própria da thread |
+| `kill(pid, SIGKILL)` | outro processo/thread | recursos da tarefa alvo de acordo com seu tipo |
+
+> ⚠️ Uma função de thread não deve terminar por `return`. Use `thread_exit()` para evitar retorno para um frame sintético inválido.
+
 
 ### 🧮 Heap dinâmico
 
@@ -279,9 +437,16 @@ alarm(ticks);
 
 ### 🧵 Threads experimentais
 
-O suporte a `thread_create()` permite criar fluxos de execução que compartilham o domínio de memória do processo pai.
+O suporte a `thread_create()` permite criar fluxos de execução concorrentes que compartilham o domínio de memória do processo pai, mas possuem pilha própria. Threads são úteis para cenários como produtor/consumidor, tarefas periódicas e concorrência cooperativa dentro do mesmo overlay.
 
-> ⚠️ **Atenção:** esse recurso é experimental. Use semáforos ao compartilhar dados e evite funções não reentrantes em threads concorrentes.
+Funções principais:
+
+```c
+thread_create(addr_funcao, prioridade);
+thread_exit();
+```
+
+> ⚠️ **Atenção:** esse recurso é experimental. Use semáforos ao compartilhar dados e evite funções não reentrantes em threads concorrentes. Ao finalizar uma thread, use `thread_exit()` em vez de `return`.
 
 ---
 
@@ -307,6 +472,7 @@ CAFE_OS/
     ├── kernel/
     │   ├── sys_main.c
     │   ├── sys_core.h
+    │   ├── sys_proc.c
     │   ├── sys_mem.c
     │   ├── sys_sched_rr.c
     │   ├── sys_overlay.c
@@ -322,6 +488,7 @@ CAFE_OS/
     │   ├── sys_shm.c
     │   ├── sys_msg.c
     │   ├── sys_thread.c
+    │   ├── sys_thread_exit.c
     │   └── sys_io.c
     │
     ├── user/
@@ -393,6 +560,34 @@ A IDE/Compilador possui quatro modos principais.
 
 ---
 
+## ⚡ Otimizações de desempenho no kernel
+
+O kernel seletivo também adota uma política simples para reduzir trocas de contexto desnecessárias.
+
+A ideia central é separar syscalls em dois grupos:
+
+| Tipo de syscall | Exemplos | Comportamento |
+|---|---|---|
+| **Leves** | `print_char`, `read_char`, `get_signal`, `msg_send`, `msg_recv`, `shmget`, `signal`, `sigreturn` | retornam ao processo atual sem escalonamento obrigatório |
+| **Bloqueantes ou estruturais** | `yield`, `exit`, `wait`, `kill`, `sleep`, `pause`, `sem_lock`, `sem_unlock`, `spawn`, `thread_create`, `thread_exit` | marcam necessidade de reescalonamento |
+
+Fluxo simplificado:
+
+```mermaid
+flowchart TD
+    A[Processo executa syscall] --> B[Kernel salva contexto mínimo]
+    B --> C[Dispatcher identifica syscall]
+    C --> D{Syscall exige reescalonamento?}
+    D -- não --> E[Retorna ao mesmo processo]
+    D -- sim --> F[Marca kernel_need_resched]
+    F --> G[Executa schedule]
+    G --> H[Restaura próxima tarefa]
+```
+
+Essa estratégia melhora principalmente aplicações que imprimem muitos caracteres, porque `printstr()` chama `print_char()` repetidamente. Sem essa otimização, cada caractere poderia provocar uma passagem completa pelo escalonador.
+
+---
+
 ## ⚙️ Kernel seletivo
 
 No modo **Kernel+Overlay**, a IDE analisa os overlays selecionados e detecta quais syscalls são usadas.
@@ -408,7 +603,7 @@ Com isso, o kernel final inclui apenas os módulos necessários.
 | `write_pipe()` / `read_pipe()` | Pipes |
 | `shmget()` | Memória compartilhada |
 | `signal()` / `pause()` / `alarm()` | Sinais |
-| `thread_create()` | Threads experimentais |
+| `thread_create()` / `thread_exit()` | Threads experimentais com pilha própria |
 
 Essa estratégia reduz o tamanho do ASM final e mantém o kernel mais fácil de evoluir.
 
@@ -432,7 +627,7 @@ Para reduzir o tamanho dos overlays, inclua apenas as bibliotecas necessárias.
 | `usr_shm.c` | `shmget()` |
 | `usr_msg.c` | `msg_send()`, `msg_recv()` |
 | `usr_signal.c` | `signal()`, `sigreturn()`, `get_signal()` |
-| `usr_thread.c` | `thread_create()` |
+| `usr_thread.c` | `thread_create()`, `thread_exit()` |
 | `usr_syscalls.c` | Agregador de compatibilidade |
 
 > 💡 Use `usr_syscalls.c` apenas para compatibilidade com código antigo. Para overlays novos, prefira bibliotecas pequenas e específicas.
@@ -522,6 +717,7 @@ Para testes que dependem de PID fixo, selecione os overlays na ordem indicada pe
 ```text
 primeiro overlay selecionado -> PID 0
 segundo overlay selecionado  -> PID 1
+terceiro overlay selecionado -> PID 2
 ```
 
 Isso é importante para testes com `wait(1)`, `kill(0, ...)`, sinais, pipes e IPC.
@@ -532,12 +728,12 @@ Isso é importante para testes com `wait(1)`, `kill(0, ...)`, sinais, pipes e IP
 
 | ID | Função | Descrição |
 |---:|---|---|
-| 1 | `exit` | Encerra o processo atual |
+| 1 | `exit` | Encerra o processo atual, liberando pilha e dados privados quando aplicável |
 | 2 | `wait` | Aguarda o término de um PID específico |
-| 3 | `kill` | Envia sinal para um processo |
+| 3 | `kill` | Envia sinal para um processo ou thread |
 | 4 | `sem_lock` | Bloqueia acesso via semáforo de kernel |
 | 5 | `sem_unlock` | Libera acesso via semáforo de kernel |
-| 6 | `spawn` | Cria novo processo dinamicamente |
+| 6 | `spawn` | Cria novo processo com pilha própria e clone privado da `.data` |
 | 7 | `mutex_try` | Tenta obter mutex |
 | 8 | `mutex_unlock` | Libera mutex |
 | 9 | `yield` | Cede voluntariamente a CPU |
@@ -554,7 +750,8 @@ Isso é importante para testes com `wait(1)`, `kill(0, ...)`, sinais, pipes e IP
 | 25 | `shmget` | Aloca ou obtém memória compartilhada |
 | 27 | `msg_send` | Envia mensagem simples |
 | 28 | `msg_recv` | Recebe mensagem simples |
-| 29 | `thread_create` | Cria thread compartilhando memória do processo pai |
+| 29 | `thread_create` | Cria thread com pilha própria compartilhando o `DS` do processo pai |
+| 30 | `thread_exit` | Encerra a thread atual, liberando apenas sua pilha própria |
 
 ---
 
@@ -563,7 +760,8 @@ Isso é importante para testes com `wait(1)`, `kill(0, ...)`, sinais, pipes e IP
 - Use sempre `void main()` como ponto de entrada.
 - Evite `naked` em aplicações comuns.
 - Inclua apenas as bibliotecas userland necessárias.
-- Chame `exit()` quando a aplicação terminar.
+- Chame `exit()` quando um processo terminar.
+- Em funções de thread, chame `thread_exit()` ao finalizar.
 - Em laços infinitos, use `yield()` quando possível.
 - Para testes com múltiplos processos, selecione os overlays na ordem correta.
 - Evite depender de funções internas do kernel em aplicações de usuário.
@@ -646,9 +844,11 @@ IDE_CompiladorC/dist/
 ```text
 1. Abrir SO/KERNEL.c
 2. Clicar Kernel+Overlay
-3. Selecionar os overlays desejados na ordem correta
+3. Selecionar até 3 overlays na ordem correta
 4. Gerar e executar o ASM final
 ```
+
+> 📌 No perfil atual, o limite recomendado é de até 3 tarefas simultâneas.
 
 ---
 
