@@ -30,6 +30,18 @@ Nesse modelo, o kernel evolui de forma independente das aplicações. Cada aplic
 
 ---
 
+## 🎬 Demonstração animada
+
+<p align="center">
+  <img src="docs/img/cafe_os_demo_long.gif" alt="Demonstração do CAFE OS / GUILIX em execução" width="720">
+</p>
+
+<p align="center">
+  <em>Execução do CAFE OS / GUILIX no ambiente de simulação.</em>
+</p>
+
+---
+
 ## 🧱 Perfil atual de execução
 
 A versão atual documentada neste README usa um perfil conservador para manter compatibilidade com a arquitetura segmentada da CPU Cariri:
@@ -60,35 +72,27 @@ O CAFE OS / GUILIX foi pensado como um ambiente didático para estudar, implemen
 | **Sinais** | `signal()`, `sigreturn()`, `pause()`, `alarm()` e `kill()` |
 | **Threads** | `thread_create()` com memória compartilhada e `thread_exit()` para encerramento seguro |
 | **Compilador** | geração de ASM, otimização e kernel seletivo |
-| **Userland** | aplicações independentes em formato overlay |
+| **Userland** | aplicações independentes em formato overlay, incluindo mini shell interativo |
 
 ---
 
 ## 🧠 Arquitetura conceitual
 
-```mermaid
-flowchart TD
-    A[IDE / Compilador C] --> B[Compilação do Kernel]
-    A --> C[Compilação dos Overlays]
-    C --> D[Detecção automática de syscalls]
-    D --> E[Kernel seletivo]
-    B --> F[ASM final monolítico]
-    E --> F
-    C --> F
-    F --> G[Simulação]
+```text
+IDE Compilador C
+├── compila SO/kernel       -> ASM do kernel
+├── compila SO/apps         -> overlays de usuário
+├── detecta syscalls        -> kernel seletivo
+└── gera ASM final          -> simulação
 
-    subgraph SO[CAFE OS / GUILIX]
-        K[SO/kernel/]
-        U[SO/user/]
-        P[SO/apps/]
-    end
-
-    K --> B
-    U --> C
-    P --> C
+SO/kernel  -> compilação do kernel
+SO/user    -> bibliotecas usadas pelos overlays
+SO/apps    -> aplicações de usuário em overlay
 ```
 
 A IDE é o centro do fluxo de build. O desenvolvedor não precisa editar manualmente o kernel para adicionar novas aplicações: basta criar um arquivo em `SO/apps/` e selecioná-lo no modo **Kernel+Overlay**.
+
+> Observação: esta versão do README evita blocos Mermaid para máxima compatibilidade com o renderizador do GitHub. Os diagramas foram mantidos como blocos de texto.
 
 ---
 
@@ -251,20 +255,17 @@ thread_exit();
 
 `spawn()` cria um **processo lógico**. O filho recebe PID próprio, pilha própria e uma cópia privada da área `.data` do pai. O código é compartilhado, mas os dados globais passam a ser independentes.
 
-```mermaid
-flowchart TD
-    A[Processo pai em execução] --> B[spawn task_addr, priority]
-    B --> C[Kernel procura PCB livre]
-    C --> D[Aloca pilha própria no heap]
-    D --> E[Aloca bloco para clone da .data]
-    E --> F[Copia .data do pai para o filho]
-    F --> G[Cria PCB do filho]
-    G --> H[Filho: mesmo CS do pai]
-    G --> I[Filho: novo DS apontando para .data clonada]
-    G --> J[Filho: SS/SP próprios]
-    H --> K[Processo filho READY]
-    I --> K
-    J --> K
+```text
+Processo pai em execução
+└── spawn()
+    ├── procura PCB livre
+    ├── aloca pilha própria no heap
+    ├── aloca área .data privada
+    ├── copia a .data do pai
+    ├── cria PCB do filho
+    ├── mantém CS compartilhado
+    ├── atribui novo DS privado
+    └── coloca o filho em READY
 ```
 
 Resumo:
@@ -283,18 +284,15 @@ Resumo:
 
 `thread_create()` cria uma **thread leve**. A thread recebe PID próprio e pilha própria, mas compartilha o mesmo domínio de dados do processo pai. Isso significa que variáveis globais são compartilhadas intencionalmente.
 
-```mermaid
-flowchart TD
-    A[Processo pai em execução] --> B[thread_create task_addr, priority]
-    B --> C[Kernel procura PCB livre]
-    C --> D[Aloca pilha própria no heap]
-    D --> E[Cria PCB da thread]
-    E --> F[Thread: mesmo CS do pai]
-    E --> G[Thread: mesmo DS do pai]
-    E --> H[Thread: SS/SP próprios]
-    F --> I[Thread READY]
-    G --> I
-    H --> I
+```text
+Processo pai em execução
+└── thread_create()
+    ├── procura PCB livre
+    ├── aloca pilha própria no heap
+    ├── cria PCB da thread
+    ├── mantém CS compartilhado
+    ├── mantém o mesmo DS do pai
+    └── coloca a thread em READY
 ```
 
 Resumo:
@@ -311,57 +309,35 @@ Resumo:
 
 #### 📊 Comparação visual: `spawn()` versus `thread_create()`
 
-```mermaid
-flowchart LR
-    subgraph PAI[Processo pai]
-        PCS[CS pai]
-        PDS[DS pai<br/>globais do pai]
-        PSTK[Pilha pai]
-    end
+```text
+Processo pai:
+  CS compartilhado
+  DS original
+  pilha própria
 
-    subgraph SPAWN[Filho criado por spawn]
-        SCS[CS compartilhado]
-        SDS[Novo DS<br/>clone da .data]
-        SSTK[Nova pilha]
-    end
+spawn():
+  CS compartilhado com o pai
+  DS novo, clonado da .data do pai
+  pilha própria
 
-    subgraph THREAD[Thread criada por thread_create]
-        TCS[CS compartilhado]
-        TDS[Mesmo DS do pai]
-        TSTK[Nova pilha]
-    end
-
-    PCS -. mesmo código .-> SCS
-    PCS -. mesmo código .-> TCS
-    PDS -. cópia no spawn .-> SDS
-    PDS -. compartilhamento real .-> TDS
+thread_create():
+  CS compartilhado com o pai
+  DS compartilhado com o pai
+  pilha própria
 ```
 
 #### 🧱 Mapa lógico de memória
 
-```mermaid
-flowchart TB
-    subgraph MEM[DS/SS lógico da tarefa]
-        D0[.data / globais]
-        D1[heap do kernel]
-        D2[pilhas alocadas por malloc]
-        D3[blocos de memória compartilhada]
-    end
+```text
+Área lógica de dados:
+  .data e globais
+    ├── DS privado no processo criado por spawn()
+    └── DS herdado/compartilhado na thread
 
-    subgraph PROC[Processo via spawn]
-        P1[DS próprio]
-        P2[stack_mem próprio]
-    end
-
-    subgraph THR[Thread]
-        T1[DS herdado do pai]
-        T2[stack_mem próprio]
-    end
-
-    D0 --> P1
-    D2 --> P2
-    D0 --> T1
-    D2 --> T2
+Heap do kernel:
+  ├── pilha do processo
+  ├── pilha da thread
+  └── blocos de memória compartilhada
 ```
 
 #### 🧾 Regras de encerramento
@@ -510,6 +486,8 @@ CAFE_OS/
     ├── apps/
     │   ├── app_hello.c
     │   ├── app_counter.c
+    │   ├── legado_16_keyboard_echo.c
+    │   ├── legado_19_shell.c
     │   ├── _template_minimal.c
     │   └── _template_stdio.c
     │
@@ -573,15 +551,16 @@ A ideia central é separar syscalls em dois grupos:
 
 Fluxo simplificado:
 
-```mermaid
-flowchart TD
-    A[Processo executa syscall] --> B[Kernel salva contexto mínimo]
-    B --> C[Dispatcher identifica syscall]
-    C --> D{Syscall exige reescalonamento?}
-    D -- não --> E[Retorna ao mesmo processo]
-    D -- sim --> F[Marca kernel_need_resched]
-    F --> G[Executa schedule]
-    G --> H[Restaura próxima tarefa]
+```text
+Processo executa syscall
+└── kernel salva contexto
+    └── dispatcher identifica syscall
+        ├── syscall leve
+        │   └── retorna ao mesmo processo
+        └── syscall bloqueante ou estrutural
+            ├── marca kernel_need_resched
+            ├── executa schedule()
+            └── restaura a próxima tarefa
 ```
 
 Essa estratégia melhora principalmente aplicações que imprimem muitos caracteres, porque `printstr()` chama `print_char()` repetidamente. Sem essa otimização, cada caractere poderia provocar uma passagem completa pelo escalonador.
@@ -685,6 +664,63 @@ void main() {
     }
 }
 ```
+
+### Exemplo de shell interativo
+
+O projeto também pode incluir uma aplicação de usuário que simula um pequeno shell. Um exemplo sugerido é:
+
+```text
+SO/apps/legado_19_shell.c
+```
+
+Esse app usa entrada e saída por caracteres, funcionando tanto com os periféricos simulados quanto com o export para ESP32 usando teclado PS/2 e monitor VGA.
+
+Bibliotecas usadas:
+
+```c
+#include "../user/usr_io.c"
+#include "../user/usr_yield.c"
+#include "../user/usr_exit.c"
+```
+
+Comandos básicos sugeridos:
+
+| Comando | Descrição |
+|---|---|
+| `help` | lista os comandos disponíveis |
+| `ver` | mostra a versão do shell |
+| `about` | mostra informações do CAFE OS / GUILIX |
+| `uname` | mostra a identificação da plataforma |
+| `mem` | mostra o perfil 4K/4K, heap e limite de tarefas |
+| `ps` | mostra uma tabela simples de tarefas |
+| `echo TEXTO` | imprime o texto informado |
+| `clear` | limpa a tela |
+| `exit` | encerra o shell |
+
+Easter eggs sugeridos:
+
+```text
+cafe
+cariri
+sudo
+sl
+matrix
+fortune
+```
+
+> 📌 O shell deve chamar `yield()` quando `read_char()` retornar `0`, evitando espera ocupada agressiva quando não há tecla disponível.
+
+---
+
+## 🧪 Aplicações de demonstração recomendadas
+
+| App | Objetivo | Bibliotecas principais |
+|---|---|---|
+| `legado_16_keyboard_echo.c` | testar entrada por teclado e saída de vídeo | `usr_io.c` |
+| `legado_19_shell.c` | testar terminal interativo, comandos e leitura de linha | `usr_io.c`, `usr_yield.c`, `usr_exit.c` |
+| `legado_15_thread_inc_dec.c` | testar threads, semáforo e impressão concorrente | `usr_thread.c`, `usr_sync.c`, `usr_printstr.c`, `usr_printint.c` |
+| `legado_17_thread_prod_cons.c` | testar produtor/consumidor com teclado | `usr_io.c`, `usr_sync.c`, `usr_thread.c` |
+| `legado_07_signal_a.c` e `legado_07_signal_b.c` | testar sinais e handlers | `usr_signal.c`, `usr_sync.c` |
 
 ---
 
