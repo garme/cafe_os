@@ -67,28 +67,23 @@ O CAFE OS / GUILIX foi pensado como um ambiente didático para estudar, implemen
 ## 🧠 Arquitetura conceitual
 
 ```mermaid
-flowchart TD
-    A[IDE / Compilador C] --> B[Compilação do Kernel]
-    A --> C[Compilação dos Overlays]
-    C --> D[Detecção automática de syscalls]
-    D --> E[Kernel seletivo]
-    B --> F[ASM final monolítico]
-    E --> F
-    C --> F
-    F --> G[Simulação]
-
-    subgraph SO[CAFE OS / GUILIX]
-        K[SO/kernel/]
-        U[SO/user/]
-        P[SO/apps/]
-    end
-
-    K --> B
-    U --> C
-    P --> C
+graph TD
+    IDE[IDE Compilador C] --> KBUILD[Compilacao do kernel]
+    IDE --> OBUILD[Compilacao dos overlays]
+    OBUILD --> SCAN[Deteccao de syscalls]
+    SCAN --> KSEL[Kernel seletivo]
+    KBUILD --> ASM[ASM final monolitico]
+    KSEL --> ASM
+    OBUILD --> ASM
+    ASM --> SIM[Simulacao]
+    KDIR[SO kernel] --> KBUILD
+    UDIR[SO user] --> OBUILD
+    ADIR[SO apps] --> OBUILD
 ```
 
 A IDE é o centro do fluxo de build. O desenvolvedor não precisa editar manualmente o kernel para adicionar novas aplicações: basta criar um arquivo em `SO/apps/` e selecioná-lo no modo **Kernel+Overlay**.
+
+> Observação: os diagramas Mermaid deste README usam sintaxe propositalmente simples para compatibilidade com o GitHub: `graph TD/LR/TB`, rótulos sem barras, sem HTML, sem acentos dentro dos nós e sem `subgraph` com títulos complexos.
 
 ---
 
@@ -252,19 +247,19 @@ thread_exit();
 `spawn()` cria um **processo lógico**. O filho recebe PID próprio, pilha própria e uma cópia privada da área `.data` do pai. O código é compartilhado, mas os dados globais passam a ser independentes.
 
 ```mermaid
-flowchart TD
-    A[Processo pai em execução] --> B[spawn task_addr, priority]
-    B --> C[Kernel procura PCB livre]
-    C --> D[Aloca pilha própria no heap]
-    D --> E[Aloca bloco para clone da .data]
-    E --> F[Copia .data do pai para o filho]
-    F --> G[Cria PCB do filho]
-    G --> H[Filho: mesmo CS do pai]
-    G --> I[Filho: novo DS apontando para .data clonada]
-    G --> J[Filho: SS/SP próprios]
-    H --> K[Processo filho READY]
-    I --> K
-    J --> K
+graph TD
+    PAI[Processo pai em execucao] --> SPAWN[Chamada spawn]
+    SPAWN --> PCB[Procura PCB livre]
+    PCB --> STK[Aloca pilha no heap]
+    STK --> DATA[Aloca data privada]
+    DATA --> COPY[Copia data do pai]
+    COPY --> CHILD[Cria PCB do filho]
+    CHILD --> CS[CS compartilhado]
+    CHILD --> DS[Novo DS privado]
+    CHILD --> SP[SP proprio]
+    CS --> READY[Filho em READY]
+    DS --> READY
+    SP --> READY
 ```
 
 Resumo:
@@ -284,17 +279,17 @@ Resumo:
 `thread_create()` cria uma **thread leve**. A thread recebe PID próprio e pilha própria, mas compartilha o mesmo domínio de dados do processo pai. Isso significa que variáveis globais são compartilhadas intencionalmente.
 
 ```mermaid
-flowchart TD
-    A[Processo pai em execução] --> B[thread_create task_addr, priority]
-    B --> C[Kernel procura PCB livre]
-    C --> D[Aloca pilha própria no heap]
-    D --> E[Cria PCB da thread]
-    E --> F[Thread: mesmo CS do pai]
-    E --> G[Thread: mesmo DS do pai]
-    E --> H[Thread: SS/SP próprios]
-    F --> I[Thread READY]
-    G --> I
-    H --> I
+graph TD
+    PAI[Processo pai em execucao] --> TCALL[Chamada thread_create]
+    TCALL --> PCB[Procura PCB livre]
+    PCB --> STK[Aloca pilha no heap]
+    STK --> THR[Cria PCB da thread]
+    THR --> CS[CS compartilhado]
+    THR --> DS[Mesmo DS do pai]
+    THR --> SP[SP proprio]
+    CS --> READY[Thread em READY]
+    DS --> READY
+    SP --> READY
 ```
 
 Resumo:
@@ -312,56 +307,24 @@ Resumo:
 #### 📊 Comparação visual: `spawn()` versus `thread_create()`
 
 ```mermaid
-flowchart LR
-    subgraph PAI[Processo pai]
-        PCS[CS pai]
-        PDS[DS pai<br/>globais do pai]
-        PSTK[Pilha pai]
-    end
-
-    subgraph SPAWN[Filho criado por spawn]
-        SCS[CS compartilhado]
-        SDS[Novo DS<br/>clone da .data]
-        SSTK[Nova pilha]
-    end
-
-    subgraph THREAD[Thread criada por thread_create]
-        TCS[CS compartilhado]
-        TDS[Mesmo DS do pai]
-        TSTK[Nova pilha]
-    end
-
-    PCS -. mesmo código .-> SCS
-    PCS -. mesmo código .-> TCS
-    PDS -. cópia no spawn .-> SDS
-    PDS -. compartilhamento real .-> TDS
+graph LR
+    PCS[CS do pai] --> SCS[CS do processo filho]
+    PCS --> TCS[CS da thread]
+    PDS[DS do pai] --> SDS[Copia privada no spawn]
+    PDS --> TDS[DS compartilhado na thread]
+    PSTK[Pilha do pai] --> SSTK[Nova pilha do processo]
+    PSTK --> TSTK[Nova pilha da thread]
 ```
 
 #### 🧱 Mapa lógico de memória
 
 ```mermaid
-flowchart TB
-    subgraph MEM[DS/SS lógico da tarefa]
-        D0[.data / globais]
-        D1[heap do kernel]
-        D2[pilhas alocadas por malloc]
-        D3[blocos de memória compartilhada]
-    end
-
-    subgraph PROC[Processo via spawn]
-        P1[DS próprio]
-        P2[stack_mem próprio]
-    end
-
-    subgraph THR[Thread]
-        T1[DS herdado do pai]
-        T2[stack_mem próprio]
-    end
-
-    D0 --> P1
-    D2 --> P2
-    D0 --> T1
-    D2 --> T2
+graph TB
+    DATA[Data e globais] --> PROC_DS[DS privado do processo]
+    DATA --> THR_DS[DS herdado pela thread]
+    HEAP[Heap do kernel] --> PROC_STACK[Pilha do processo]
+    HEAP --> THR_STACK[Pilha da thread]
+    HEAP --> SHM[Memoria compartilhada]
 ```
 
 #### 🧾 Regras de encerramento
@@ -574,14 +537,15 @@ A ideia central é separar syscalls em dois grupos:
 Fluxo simplificado:
 
 ```mermaid
-flowchart TD
-    A[Processo executa syscall] --> B[Kernel salva contexto mínimo]
-    B --> C[Dispatcher identifica syscall]
-    C --> D{Syscall exige reescalonamento?}
-    D -- não --> E[Retorna ao mesmo processo]
-    D -- sim --> F[Marca kernel_need_resched]
-    F --> G[Executa schedule]
-    G --> H[Restaura próxima tarefa]
+graph TD
+    SYSCALL[Processo executa syscall] --> SAVE[Kernel salva contexto]
+    SAVE --> DISPATCH[Dispatcher identifica syscall]
+    DISPATCH --> LIGHT[Syscall leve]
+    DISPATCH --> BLOCK[Syscall bloqueante]
+    LIGHT --> SAME[Retorna ao mesmo processo]
+    BLOCK --> NEED[Marca kernel_need_resched]
+    NEED --> SCHED[Executa schedule]
+    SCHED --> NEXT[Restaura proxima tarefa]
 ```
 
 Essa estratégia melhora principalmente aplicações que imprimem muitos caracteres, porque `printstr()` chama `print_char()` repetidamente. Sem essa otimização, cada caractere poderia provocar uma passagem completa pelo escalonador.
