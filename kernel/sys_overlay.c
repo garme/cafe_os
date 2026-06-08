@@ -7,57 +7,14 @@
 int OVERLAY_MAGIC = 51966;
 int OVERLAY_HEADER_SIZE = 7;
 
-void create_process_overlay(int pid, int entry_pc, int cs_base, int ds_base, int stack_base, int priority, int mem_base, int stack_mem) {
-    struct PCB_Struct *p;
-    int *sp_ptr;
-
-    p = &pcb[pid];
-    p->state = STATE_READY;
-    p->sp = 0;
-    p->ac = 0;
-    p->pc = entry_pc;
-    p->cs = cs_base;
-    p->ds = ds_base;
-    p->ss = KERNEL_SS;
-    p->priority = priority;
-    p->age = 0;
-    p->mem_base = mem_base;
-    p->stack_mem = stack_mem;
-    p->is_thread = 0;
-    p->waiting_for_pid = -1;
-    p->wakeup_tick = 0;
-    p->alarm_tick = 0;
-    p->pending_signal = 0;
-    p->signal_handler = 0;
-    p->saved_pc = 0;
-    p->in_signal = 0;
-
-    p->sig_saved_sp = 0;
-    p->sig_saved_ac = 0;
-    p->sig_saved_ptr = 0;
-    p->sig_saved_idx = 0;
-    p->sig_saved_lhs = 0;
-    p->sig_saved_val = 0;
-    p->sig_saved_left_cond = 0;
-    p->sig_saved_left = 0;
-    p->sig_saved_right = 0;
-    p->sig_saved_arr_base = 0;
-    p->sig_saved_step = 0;
-    p->sig_saved_flags = 0;
-
-    sp_ptr = &ram[stack_base - 1];
-    *sp_ptr = entry_pc; sp_ptr = sp_ptr - 1;
-    *sp_ptr = 8;        sp_ptr = sp_ptr - 1;
-    *sp_ptr = 0;        sp_ptr = sp_ptr - 1;
-    *sp_ptr = 0;        sp_ptr = sp_ptr - 1;
-    *sp_ptr = 0;        sp_ptr = sp_ptr - 1;
-    *sp_ptr = 0;        sp_ptr = sp_ptr - 1;
-    *sp_ptr = 0;        sp_ptr = sp_ptr - 1;
-    *sp_ptr = 0;        sp_ptr = sp_ptr - 1;
-    *sp_ptr = 0;        sp_ptr = sp_ptr - 1;
-    *sp_ptr = 0;        sp_ptr = sp_ptr - 1;
-    *sp_ptr = 0;
-    p->sp = stack_base - 11;
+void create_process_overlay(int pid, int entry_pc, int cs_base, int ds_base,
+                            int stack_base, int priority,
+                            int mem_base, int data_size, int data_is_heap,
+                            int stack_mem) {
+    create_process_ex(pid, entry_pc, stack_base, priority,
+                      cs_base, ds_base,
+                      mem_base, data_size, data_is_heap,
+                      stack_mem, 0);
 }
 
 int kernel_spawn_overlay(int overlay_img, int priority) {
@@ -119,6 +76,8 @@ int kernel_spawn_overlay(int overlay_img, int priority) {
         stack_mem + stack_size,
         priority,
         data_off,
+        data_size + bss_size,
+        0,
         stack_mem
     );
     return free_pid;

@@ -9,6 +9,8 @@ int kernel_thread_create(int task_addr, int priority) {
     int free_pid;
     int shared_mem;
     int stack_mem;
+    int data_size;
+    int data_is_heap;
 
     i = 0;
     free_pid = -1;
@@ -26,6 +28,8 @@ int kernel_thread_create(int task_addr, int priority) {
 
     // Thread compartilha o domínio de memória do pai, mas NUNCA a pilha.
     shared_mem = curr_pcb->mem_base;
+    data_size = curr_pcb->data_size;
+    data_is_heap = curr_pcb->data_is_heap;
 
     // Pilha própria de 64 palavras. Literal intencional por limitação atual
     // do codegen em multiplicação por variável simbólica.
@@ -34,7 +38,17 @@ int kernel_thread_create(int task_addr, int priority) {
         return -1;
     }
 
-    create_process(free_pid, task_addr, stack_mem + 64, priority, shared_mem, stack_mem, 1);
+    create_process_ex(free_pid,
+                      task_addr,
+                      stack_mem + 64,
+                      priority,
+                      curr_pcb->cs,
+                      curr_pcb->ds,
+                      shared_mem,
+                      data_size,
+                      data_is_heap,
+                      stack_mem,
+                      1);
     return free_pid;
 }
 

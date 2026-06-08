@@ -57,6 +57,10 @@ void kernel_dispatch_syscall() {
         isr_tmp_ac = kernel_thread_create(tmp_sys_arg, tmp_sys_arg2);
         curr_pcb->ac = isr_tmp_ac;
     }
+    if (tmp_sys_id == 30) {
+        isr_tmp_ac = kernel_thread_exit();
+        curr_pcb->ac = isr_tmp_ac;
+    }
 }
 
 #endif

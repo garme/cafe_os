@@ -58,9 +58,20 @@ struct PCB_Struct {
     int priority;        // Quanto maior o número, maior a prioridade
     int age;             // Guarda o age da tarefa (Escalonador Prioridade Dinâmica)
 
-    // mem_base é a base lógica do domínio de memória associado à tarefa.
-    // Em thread_create(), é herdado do pai. Em spawn(), é próprio.
+    // mem_base é o offset lógico do início da área .data vista pela tarefa.
+    // Em overlay in-place, aponta para a imagem injetada no .data do kernel.
+    // Em spawn() com clone, aponta para um bloco privado alocado no heap.
+    // Em thread_create(), é herdado do pai.
     int mem_base;
+
+    // Quantas palavras da área .data pertencem ao domínio da tarefa.
+    // spawn() usa esse tamanho para clonar a .data do pai.
+    int data_size;
+
+    // 1 quando mem_base veio de malloc() e deve ser liberado quando o
+    // último processo/thread que compartilha esse domínio terminar.
+    // 0 quando mem_base aponta para a imagem in-place do overlay.
+    int data_is_heap;
 
     // stack_mem é sempre o ponteiro real devolvido por malloc() para a pilha
     // desta tarefa. É esse bloco que deve ser liberado em exit()/kill().

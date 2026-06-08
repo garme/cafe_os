@@ -48,6 +48,6 @@ Restam cerca de 314 palavras para memória compartilhada (`shmget`) e fragmenta�
 
 O kernel não chama mais `schedule()` em toda syscall. Syscalls leves como `print_char`, `read_char`, `get_signal`, `msg_send`, `msg_recv`, `shmget`, `signal` e `sigreturn` retornam diretamente ao processo atual.
 
-Syscalls que bloqueiam/finalizam/cedem CPU marcam `kernel_need_resched = 1`. A syscall `yield()` também é marcada diretamente no handler de syscall, porque o dispatcher gerado pela IDE costuma deixá-la vazia.
+Syscalls que bloqueiam/finalizam/cedem CPU marcam `kernel_need_resched = 1`.
 
 O relógio lógico (`kernel_tick_update`) foi movido para o handler de timer, evitando que o tempo do sistema avance a cada caractere impresso.

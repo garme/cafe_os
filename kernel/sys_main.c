@@ -109,12 +109,6 @@ void main() {
     // finalizar, acordar alguém ou executar yield().
     kernel_need_resched = 0;
 
-    // A syscall yield() é intencionalmente vazia no dispatcher.
-    // Marcamos aqui para funcionar também quando a IDE gerar um dispatcher seletivo.
-    if (tmp_sys_id == 9) {
-        kernel_need_resched = 1;
-    }
-
     // =================================================================
     // Agora estamos 100% seguros em Kernel Space!
     // O dispatcher é gerado pela IDE no modo Kernel+Overlay.
