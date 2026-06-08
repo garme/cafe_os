@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="390" viewBox="0 0 1000 390" role="img">
+  <defs>
+    <style>
+      .bg { fill: #0d1117; }
+      .box { fill: #161b22; stroke: #58a6ff; stroke-width: 2; rx: 12; }
+      .box2 { fill: #102030; stroke: #2ea043; stroke-width: 2; rx: 12; }
+      .box3 { fill: #241a0f; stroke: #d29922; stroke-width: 2; rx: 12; }
+      .txt { fill: #c9d1d9; font-family: Arial, sans-serif; font-size: 15px; }
+      .small { fill: #8b949e; font-family: Arial, sans-serif; font-size: 12px; }
+      .title { fill: #f0f6fc; font-family: Arial, sans-serif; font-size: 20px; font-weight: bold; }
+      .arrow { stroke: #8b949e; stroke-width: 2.2; fill: none; marker-end: url(#arrow); }
+      .line { stroke: #30363d; stroke-width: 1; }
+    </style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L0,6 L9,3 z" fill="#8b949e" />
+    </marker>
+  </defs>
+  <rect class="bg" x="0" y="0" width="1000" height="390" rx="16"/>
+<text class="title" x="500.0" y="38" text-anchor="middle">Syscalls leves e reescalonamento</text><rect class="box" x="70" y="160" width="150" height="60" rx="12"/>
+<text class="txt" x="145.0" y="182.0" text-anchor="middle">Syscall</text>
+<text class="txt" x="145.0" y="199.0" text-anchor="middle">usuário</text>
+<rect class="box2" x="280" y="160" width="160" height="60" rx="12"/>
+<text class="txt" x="360.0" y="182.0" text-anchor="middle">Salva</text>
+<text class="txt" x="360.0" y="199.0" text-anchor="middle">contexto</text>
+<rect class="box3" x="500" y="160" width="170" height="60" rx="12"/>
+<text class="txt" x="585.0" y="182.0" text-anchor="middle">Dispatcher</text>
+<text class="txt" x="585.0" y="199.0" text-anchor="middle">de syscall</text>
+<rect class="box2" x="740" y="80" width="180" height="60" rx="12"/>
+<text class="txt" x="830.0" y="102.0" text-anchor="middle">Syscall leve</text>
+<text class="txt" x="830.0" y="119.0" text-anchor="middle">retorna direto</text>
+<rect class="box3" x="740" y="240" width="180" height="60" rx="12"/>
+<text class="txt" x="830.0" y="262.0" text-anchor="middle">Bloqueante</text>
+<text class="txt" x="830.0" y="279.0" text-anchor="middle">schedule()</text>
+<path class="arrow" d="M220,190 L280,190"/>
+<path class="arrow" d="M440,190 L500,190"/>
+<path class="arrow" d="M670,190 L740,110"/>
+<path class="arrow" d="M670,190 L740,270"/>
+<text class="small" x="830" y="165" text-anchor="middle">Exemplos leves: print_char, read_char</text><text class="small" x="830" y="325" text-anchor="middle">Exemplos bloqueantes: yield, wait, sleep</text></svg>

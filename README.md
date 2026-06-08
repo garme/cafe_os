@@ -30,18 +30,6 @@ Nesse modelo, o kernel evolui de forma independente das aplicações. Cada aplic
 
 ---
 
-## 🎬 Demonstração animada
-
-<p align="center">
-  <img src="docs/img/cafe_os_demo_long.gif" alt="Demonstração do CAFE OS / GUILIX em execução" width="720">
-</p>
-
-<p align="center">
-  <em>Execução do CAFE OS / GUILIX no ambiente de simulação.</em>
-</p>
-
----
-
 ## 🧱 Perfil atual de execução
 
 A versão atual documentada neste README usa um perfil conservador para manter compatibilidade com a arquitetura segmentada da CPU Cariri:
@@ -78,21 +66,13 @@ O CAFE OS / GUILIX foi pensado como um ambiente didático para estudar, implemen
 
 ## 🧠 Arquitetura conceitual
 
-```text
-IDE Compilador C
-├── compila SO/kernel       -> ASM do kernel
-├── compila SO/apps         -> overlays de usuário
-├── detecta syscalls        -> kernel seletivo
-└── gera ASM final          -> simulação
-
-SO/kernel  -> compilação do kernel
-SO/user    -> bibliotecas usadas pelos overlays
-SO/apps    -> aplicações de usuário em overlay
-```
+<p align="center">
+  <img src="docs/img/arquitetura_build.svg" alt="Arquitetura de build do CAFE OS" width="720">
+</p>
 
 A IDE é o centro do fluxo de build. O desenvolvedor não precisa editar manualmente o kernel para adicionar novas aplicações: basta criar um arquivo em `SO/apps/` e selecioná-lo no modo **Kernel+Overlay**.
 
-> Observação: esta versão do README evita blocos Mermaid para máxima compatibilidade com o renderizador do GitHub. Os diagramas foram mantidos como blocos de texto.
+> Observação: os gráficos deste README são imagens SVG versionadas em `docs/img/`, evitando problemas de renderização Mermaid no GitHub.
 
 ---
 
@@ -255,18 +235,9 @@ thread_exit();
 
 `spawn()` cria um **processo lógico**. O filho recebe PID próprio, pilha própria e uma cópia privada da área `.data` do pai. O código é compartilhado, mas os dados globais passam a ser independentes.
 
-```text
-Processo pai em execução
-└── spawn()
-    ├── procura PCB livre
-    ├── aloca pilha própria no heap
-    ├── aloca área .data privada
-    ├── copia a .data do pai
-    ├── cria PCB do filho
-    ├── mantém CS compartilhado
-    ├── atribui novo DS privado
-    └── coloca o filho em READY
-```
+<p align="center">
+  <img src="docs/img/processo_spawn.svg" alt="Criação de processo com spawn" width="720">
+</p>
 
 Resumo:
 
@@ -284,16 +255,9 @@ Resumo:
 
 `thread_create()` cria uma **thread leve**. A thread recebe PID próprio e pilha própria, mas compartilha o mesmo domínio de dados do processo pai. Isso significa que variáveis globais são compartilhadas intencionalmente.
 
-```text
-Processo pai em execução
-└── thread_create()
-    ├── procura PCB livre
-    ├── aloca pilha própria no heap
-    ├── cria PCB da thread
-    ├── mantém CS compartilhado
-    ├── mantém o mesmo DS do pai
-    └── coloca a thread em READY
-```
+<p align="center">
+  <img src="docs/img/thread_create.svg" alt="Criação de thread" width="720">
+</p>
 
 Resumo:
 
@@ -309,36 +273,15 @@ Resumo:
 
 #### 📊 Comparação visual: `spawn()` versus `thread_create()`
 
-```text
-Processo pai:
-  CS compartilhado
-  DS original
-  pilha própria
-
-spawn():
-  CS compartilhado com o pai
-  DS novo, clonado da .data do pai
-  pilha própria
-
-thread_create():
-  CS compartilhado com o pai
-  DS compartilhado com o pai
-  pilha própria
-```
+<p align="center">
+  <img src="docs/img/spawn_vs_thread.svg" alt="Comparação entre spawn e thread_create" width="720">
+</p>
 
 #### 🧱 Mapa lógico de memória
 
-```text
-Área lógica de dados:
-  .data e globais
-    ├── DS privado no processo criado por spawn()
-    └── DS herdado/compartilhado na thread
-
-Heap do kernel:
-  ├── pilha do processo
-  ├── pilha da thread
-  └── blocos de memória compartilhada
-```
+<p align="center">
+  <img src="docs/img/mapa_memoria.svg" alt="Mapa lógico de memória" width="720">
+</p>
 
 #### 🧾 Regras de encerramento
 
@@ -551,17 +494,9 @@ A ideia central é separar syscalls em dois grupos:
 
 Fluxo simplificado:
 
-```text
-Processo executa syscall
-└── kernel salva contexto
-    └── dispatcher identifica syscall
-        ├── syscall leve
-        │   └── retorna ao mesmo processo
-        └── syscall bloqueante ou estrutural
-            ├── marca kernel_need_resched
-            ├── executa schedule()
-            └── restaura a próxima tarefa
-```
+<p align="center">
+  <img src="docs/img/syscall_desempenho.svg" alt="Fluxo de syscall e reescalonamento" width="720">
+</p>
 
 Essa estratégia melhora principalmente aplicações que imprimem muitos caracteres, porque `printstr()` chama `print_char()` repetidamente. Sem essa otimização, cada caractere poderia provocar uma passagem completa pelo escalonador.
 
@@ -899,6 +834,18 @@ SO/apps/   -> aplicações em overlay
 ```
 
 A IDE/Compilador coordena todo o processo de build. O desenvolvedor não precisa editar o kernel para adicionar novas aplicações. Basta criar um overlay em `SO/apps/`, selecionar no modo **Kernel+Overlay** e gerar o sistema final.
+
+---
+
+## 🎬 Demonstração animada
+
+<p align="center">
+  <img src="docs/img/cafe_os_demo_long.gif" alt="Demonstração do CAFE OS / GUILIX em execução" width="720">
+</p>
+
+<p align="center">
+  <em>Execução do CAFE OS / GUILIX no ambiente de simulação.</em>
+</p>
 
 <div align="center">
 
