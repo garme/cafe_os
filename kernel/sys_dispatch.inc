@@ -1,8 +1,12 @@
 #ifndef SYS_DISPATCH_INC
 #define SYS_DISPATCH_INC
 
-// Fallback para compilação Kernel isolada: dispatcher completo.
-// No modo Kernel+Overlay, a IDE substitui este arquivo por uma versão seletiva em memória.
+// Fallback para compilacao Kernel isolada: dispatcher completo.
+//
+// No modo Kernel+Overlay, a IDE substitui este arquivo por uma versao
+// seletiva em memoria. Mesmo assim, este arquivo precisa ser coerente
+// com sys_kernel_includes.inc: tudo que e chamado aqui deve estar
+// declarado pelos includes do fallback.
 void kernel_dispatch_syscall() {
     if (tmp_sys_id == 1) { kernel_exit(); }
     if (tmp_sys_id == 2) { kernel_wait(tmp_sys_arg); }
