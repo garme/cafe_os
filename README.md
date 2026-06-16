@@ -40,7 +40,7 @@ A arquitetura permite evoluir o kernel e as aplicações de forma independente, 
 
 <!-- VISUAL:DEMO:START -->
 <div align="center">
-  <img src="docs/cafe_os_demo_long.gif" alt="Demonstração do CAFE OS / GUILIX em execução" width="900">
+  <img src="docs/img/cafe_os_demo_long.gif" alt="Demonstração do CAFE OS / GUILIX em execução" width="900">
   <br>
   <sub><strong>Demonstração:</strong> compilação, inicialização do kernel e execução de aplicações de usuário.</sub>
 </div>
@@ -102,7 +102,7 @@ A IDE é o centro do fluxo de build. O desenvolvedor não precisa editar manualm
 
 <!-- VISUAL:BUILD:START -->
 <div align="center">
-  <img src="docs/arquitetura_build.svg" alt="Fluxo de build do kernel e dos overlays" width="950">
+  <img src="docs/img/arquitetura_build.svg" alt="Fluxo de build do kernel e dos overlays" width="950">
   <br>
   <sub>Fluxo integrado: compilação, detecção de syscalls, seleção do kernel e geração do ASM final.</sub>
 </div>
@@ -246,7 +246,7 @@ spawn(...);
 
 <!-- VISUAL:SPAWN:START -->
 <div align="center">
-  <img src="docs/processo_spawn.svg" alt="Criação de processo com spawn" width="950">
+  <img src="docs/img/processo_spawn.svg" alt="Criação de processo com spawn" width="950">
   <br>
   <sub>O processo filho recebe PCB, pilha e domínio de dados próprios, preservando o isolamento lógico.</sub>
 </div>
@@ -268,7 +268,7 @@ Esse heap é utilizado por processos criados dinamicamente, pilhas de overlays, 
 
 <!-- VISUAL:MEMORY:START -->
 <div align="center">
-  <img src="docs/mapa_memoria.svg" alt="Mapa lógico de memória do CAFE OS / GUILIX" width="950">
+  <img src="docs/img/mapa_memoria.svg" alt="Mapa lógico de memória do CAFE OS / GUILIX" width="950">
   <br>
   <sub>Organização lógica de dados globais, heap, pilhas, processos, threads e memória compartilhada.</sub>
 </div>
@@ -341,13 +341,13 @@ alarm(ticks);
 
 <!-- VISUAL:THREADS:START -->
 <div align="center">
-  <img src="docs/thread_create.svg" alt="Criação de thread com thread_create" width="950">
+  <img src="docs/img/thread_create.svg" alt="Criação de thread com thread_create" width="950">
   <br>
   <sub>Uma thread recebe contexto e pilha próprios, mas compartilha o segmento de dados com o processo pai.</sub>
 </div>
 
 <div align="center">
-  <img src="docs/spawn_vs_thread.svg" alt="Comparação entre spawn e thread_create" width="950">
+  <img src="docs/img/spawn_vs_thread.svg" alt="Comparação entre spawn e thread_create" width="950">
   <br>
   <sub><code>spawn()</code> cria um processo com dados isolados; <code>thread_create()</code> cria um fluxo com dados compartilhados.</sub>
 </div>
@@ -907,7 +907,7 @@ Isso é importante em testes com `wait(pid)`, `kill(pid, ...)`, sinais e IPC.
 As chamadas de sistema entram no kernel por um dispatcher comum. Operações leves podem concluir e retornar ao contexto corrente, enquanto operações que bloqueiam ou cedem a CPU acionam o escalonador. Essa distinção ajuda a reduzir trabalho desnecessário no caminho crítico.
 
 <div align="center">
-  <img src="docs/syscall_desempenho.svg" alt="Fluxo de syscalls leves e bloqueantes" width="950">
+  <img src="docs/img/syscall_desempenho.svg" alt="Fluxo de syscalls leves e bloqueantes" width="950">
   <br>
   <sub>Syscalls leves retornam diretamente; syscalls bloqueantes ou cooperativas passam pelo escalonador.</sub>
 </div>
