@@ -8,17 +8,16 @@ void kernel_sem_lock() {
         SEM_STATE = 1;
     } else {
         pcb[current_pid].state = STATE_BLOCKED;
-        kernel_need_resched = 1;
     }
 }
 
 void kernel_sem_unlock() {
     int i;
     int acordou_alguem;
-
+    
     acordou_alguem = 0;
     i = 0;
-
+    
     while(i < MAX_PROCESSES) {
         if (pcb[i].state == STATE_BLOCKED) {
             pcb[i].state = STATE_READY;
@@ -28,11 +27,9 @@ void kernel_sem_unlock() {
             i = i + 1;
         }
     }
-
+    
     if (acordou_alguem == 0) {
         SEM_STATE = 0;
-    } else {
-        kernel_need_resched = 1;
     }
 }
 

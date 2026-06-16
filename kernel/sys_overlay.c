@@ -2,19 +2,60 @@
 #define SYS_OVERLAY_C
 
 // Formato da imagem de overlay injetada pela IDE no .data:
-// v1: [magic, version, entry_pc, text_size, data_size, bss_size, stack_size, text..., data...]
-// v2: [magic, 2, entry_pc, ds_delta, code_size, data_size, code..., data...]
+// [0] magic=0xCAFE, [1] version, [2] entry_pc, [3] text_size,
+// [4] data_size, [5] bss_size, [6] stack_size, seguido por text/data/bss.
 int OVERLAY_MAGIC = 51966;
 int OVERLAY_HEADER_SIZE = 7;
 
-void create_process_overlay(int pid, int entry_pc, int cs_base, int ds_base,
-                            int stack_base, int priority,
-                            int mem_base, int data_size, int data_is_heap,
-                            int stack_mem) {
-    create_process_ex(pid, entry_pc, stack_base, priority,
-                      cs_base, ds_base,
-                      mem_base, data_size, data_is_heap,
-                      stack_mem, 0);
+void create_process_overlay(int pid, int entry_pc, int cs_base, int ds_base, int stack_base, int priority, int mem_base) {
+    struct PCB_Struct *p;
+    int *sp_ptr;
+
+    p = &pcb[pid];
+    p->state = STATE_READY;
+    p->sp = 0;
+    p->ac = 0;
+    p->pc = entry_pc;
+    p->cs = cs_base;
+    p->ds = ds_base;
+    p->ss = KERNEL_SS;
+    p->priority = priority;
+    p->age = 0;
+    p->mem_base = mem_base;
+    p->waiting_for_pid = -1;
+    p->wakeup_tick = 0;
+    p->alarm_tick = 0;
+    p->pending_signal = 0;
+    p->signal_handler = 0;
+    p->saved_pc = 0;
+    p->in_signal = 0;
+
+    p->sig_saved_sp = 0;
+    p->sig_saved_ac = 0;
+    p->sig_saved_ptr = 0;
+    p->sig_saved_idx = 0;
+    p->sig_saved_lhs = 0;
+    p->sig_saved_val = 0;
+    p->sig_saved_left_cond = 0;
+    p->sig_saved_left = 0;
+    p->sig_saved_right = 0;
+    p->sig_saved_arr_base = 0;
+    p->sig_saved_step = 0;
+    p->sig_saved_flags = 0;
+
+    sp_ptr = &ram[stack_base - 1];
+    *sp_ptr = entry_pc; sp_ptr = sp_ptr - 1;
+    *sp_ptr = 8;        sp_ptr = sp_ptr - 1;
+    *sp_ptr = 0;        sp_ptr = sp_ptr - 1;
+    *sp_ptr = 0;        sp_ptr = sp_ptr - 1;
+    *sp_ptr = 0;        sp_ptr = sp_ptr - 1;
+    *sp_ptr = 0;        sp_ptr = sp_ptr - 1;
+    *sp_ptr = 0;        sp_ptr = sp_ptr - 1;
+    *sp_ptr = 0;        sp_ptr = sp_ptr - 1;
+    *sp_ptr = 0;        sp_ptr = sp_ptr - 1;
+    *sp_ptr = 0;        sp_ptr = sp_ptr - 1;
+    *sp_ptr = 0;
+    p->sp = stack_base - 11;
 }
 
 int kernel_spawn_overlay(int overlay_img, int priority) {
@@ -29,18 +70,22 @@ int kernel_spawn_overlay(int overlay_img, int priority) {
     int header_size;
     int text_off;
     int data_off;
-    int stack_mem;
+    int mem;
 
     if (ram[overlay_img] != OVERLAY_MAGIC) { return -1; }
 
     version = ram[overlay_img + 1];
 
+    // Formato v1 antigo:
+    // [magic, version, entry_pc, text_size, data_size, bss_size, stack_size, text..., data...]
+    // Formato v2 da nova IDE:
+    // [magic, 2, entry_pc, ds_delta, code_size, data_size, code..., data...]
     if (version == 2) {
         entry_pc = ram[overlay_img + 2];
         text_size = ram[overlay_img + 4];
         data_size = ram[overlay_img + 5];
         bss_size = 0;
-        stack_size = 64;
+        stack_size = 40;
         header_size = 6;
     } else {
         entry_pc = ram[overlay_img + 2];
@@ -48,7 +93,7 @@ int kernel_spawn_overlay(int overlay_img, int priority) {
         data_size = ram[overlay_img + 4];
         bss_size = ram[overlay_img + 5];
         stack_size = ram[overlay_img + 6];
-        if (stack_size == 0) { stack_size = 64; }
+        if (stack_size == 0) { stack_size = 40; }
         header_size = OVERLAY_HEADER_SIZE;
     }
 
@@ -63,23 +108,21 @@ int kernel_spawn_overlay(int overlay_img, int priority) {
     text_off = overlay_img + header_size;
     data_off = text_off + text_size;
 
-    // Apenas a pilha do processo é alocada no heap. Texto/dados do overlay
-    // continuam in-place dentro do .data do kernel, preservando o limite de 4K.
-    stack_mem = malloc(stack_size);
-    if (stack_mem == 0) { return -1; }
+    mem = malloc(stack_size);
+    if (mem == 0) { return -1; }
 
+    // Execução in-place: CS aponta para o bloco text injetado em .data;
+    // DS aponta para data/bss do mesmo overlay; SS permanece no heap do kernel.
     create_process_overlay(
         free_pid,
         entry_pc,
         KERNEL_DS + text_off,
         KERNEL_DS + data_off,
-        stack_mem + stack_size,
+        mem + stack_size,
         priority,
-        data_off,
-        data_size + bss_size,
-        0,
-        stack_mem
+        mem
     );
+
     return free_pid;
 }
 

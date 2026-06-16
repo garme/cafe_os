@@ -1,0 +1,315 @@
+{
+  "baseline_hello": {
+    "syscalls": [
+      1,
+      9,
+      10
+    ],
+    "syscall_names": [
+      "exit",
+      "yield",
+      "print_char"
+    ],
+    "network_roles": [],
+    "line_usage": {
+      "kernel_asm_lines": 2894,
+      "final_asm_lines": 2916,
+      "overlay_asm_lines": 139
+    },
+    "kernel_estimate": {
+      "code_words": 2582,
+      "code_free": 1514,
+      "data_words_excluding_overlay_table_and_images": 494,
+      "stack_words": 100,
+      "data_total_excluding_images": 594
+    },
+    "final_usage": {
+      "limit": 4096,
+      "code_words": 2582,
+      "code_free": 1514,
+      "data_words": 637,
+      "stack_words": 100,
+      "data_total_words": 737,
+      "data_free": 3359,
+      "physical_words": 4733,
+      "code_ok": 1,
+      "data_ok": 1
+    },
+    "overlay_injection_words": 143,
+    "overlays": [
+      {
+        "path": "SO/apps/app_hello.c",
+        "image_words": 141,
+        "code_words": 106,
+        "data_words": 29,
+        "stack_words": 100,
+        "data_total_words": 129,
+        "asm_lines": 139
+      }
+    ]
+  },
+  "network_client": {
+    "syscalls": [
+      1,
+      9,
+      10,
+      30,
+      31
+    ],
+    "syscall_names": [
+      "exit",
+      "yield",
+      "print_char",
+      "net_out",
+      "net_in"
+    ],
+    "network_roles": [
+      "cliente"
+    ],
+    "line_usage": {
+      "kernel_asm_lines": 3038,
+      "final_asm_lines": 3164,
+      "overlay_asm_lines": 1350
+    },
+    "kernel_estimate": {
+      "code_words": 2705,
+      "code_free": 1391,
+      "data_words_excluding_overlay_table_and_images": 501,
+      "stack_words": 100,
+      "data_total_excluding_images": 601
+    },
+    "final_usage": {
+      "limit": 4096,
+      "code_words": 2705,
+      "code_free": 1391,
+      "data_words": 1891,
+      "stack_words": 100,
+      "data_total_words": 1991,
+      "data_free": 2105,
+      "physical_words": 5987,
+      "code_ok": 1,
+      "data_ok": 1
+    },
+    "overlay_injection_words": 1390,
+    "overlays": [
+      {
+        "path": "SO/apps/app_net_client.c",
+        "image_words": 1388,
+        "code_words": 1140,
+        "data_words": 242,
+        "stack_words": 100,
+        "data_total_words": 342,
+        "asm_lines": 1350
+      }
+    ]
+  },
+  "network_server": {
+    "syscalls": [
+      1,
+      9,
+      10,
+      30,
+      31
+    ],
+    "syscall_names": [
+      "exit",
+      "yield",
+      "print_char",
+      "net_out",
+      "net_in"
+    ],
+    "network_roles": [
+      "servidor"
+    ],
+    "line_usage": {
+      "kernel_asm_lines": 3038,
+      "final_asm_lines": 3171,
+      "overlay_asm_lines": 1413
+    },
+    "kernel_estimate": {
+      "code_words": 2705,
+      "code_free": 1391,
+      "data_words_excluding_overlay_table_and_images": 501,
+      "stack_words": 100,
+      "data_total_excluding_images": 601
+    },
+    "final_usage": {
+      "limit": 4096,
+      "code_words": 2705,
+      "code_free": 1391,
+      "data_words": 1977,
+      "stack_words": 100,
+      "data_total_words": 2077,
+      "data_free": 2019,
+      "physical_words": 6073,
+      "code_ok": 1,
+      "data_ok": 1
+    },
+    "overlay_injection_words": 1476,
+    "overlays": [
+      {
+        "path": "SO/apps/app_net_server.c",
+        "image_words": 1474,
+        "code_words": 1192,
+        "data_words": 276,
+        "stack_words": 100,
+        "data_total_words": 376,
+        "asm_lines": 1413
+      }
+    ]
+  },
+  "network_client_server": {
+    "syscalls": [
+      1,
+      9,
+      10,
+      30,
+      31
+    ],
+    "syscall_names": [
+      "exit",
+      "yield",
+      "print_char",
+      "net_out",
+      "net_in"
+    ],
+    "network_roles": [
+      "cliente",
+      "servidor"
+    ],
+    "line_usage": {
+      "kernel_asm_lines": 3047,
+      "final_asm_lines": 3298,
+      "overlay_asm_lines": 2763
+    },
+    "kernel_estimate": {
+      "code_words": 2713,
+      "code_free": 1383,
+      "data_words_excluding_overlay_table_and_images": 502,
+      "stack_words": 100,
+      "data_total_excluding_images": 602
+    },
+    "final_usage": {
+      "limit": 4096,
+      "code_words": 2713,
+      "code_free": 1383,
+      "data_words": 3367,
+      "stack_words": 100,
+      "data_total_words": 3467,
+      "data_free": 629,
+      "physical_words": 7463,
+      "code_ok": 1,
+      "data_ok": 1
+    },
+    "overlay_injection_words": 2865,
+    "overlays": [
+      {
+        "path": "SO/apps/app_net_client.c",
+        "image_words": 1388,
+        "code_words": 1140,
+        "data_words": 242,
+        "stack_words": 100,
+        "data_total_words": 342,
+        "asm_lines": 1350
+      },
+      {
+        "path": "SO/apps/app_net_server.c",
+        "image_words": 1474,
+        "code_words": 1192,
+        "data_words": 276,
+        "stack_words": 100,
+        "data_total_words": 376,
+        "asm_lines": 1413
+      }
+    ]
+  },
+  "network_client_server_hello": {
+    "syscalls": [
+      1,
+      9,
+      10,
+      30,
+      31
+    ],
+    "syscall_names": [
+      "exit",
+      "yield",
+      "print_char",
+      "net_out",
+      "net_in"
+    ],
+    "network_roles": [
+      "cliente",
+      "servidor"
+    ],
+    "line_usage": {
+      "kernel_asm_lines": 3056,
+      "final_asm_lines": 3321,
+      "overlay_asm_lines": 2902
+    },
+    "kernel_estimate": {
+      "code_words": 2721,
+      "code_free": 1375,
+      "data_words_excluding_overlay_table_and_images": 503,
+      "stack_words": 100,
+      "data_total_excluding_images": 603
+    },
+    "final_usage": {
+      "limit": 4096,
+      "code_words": 2721,
+      "code_free": 1375,
+      "data_words": 3510,
+      "stack_words": 100,
+      "data_total_words": 3610,
+      "data_free": 486,
+      "physical_words": 7606,
+      "code_ok": 1,
+      "data_ok": 1
+    },
+    "overlay_injection_words": 3007,
+    "overlays": [
+      {
+        "path": "SO/apps/app_net_client.c",
+        "image_words": 1388,
+        "code_words": 1140,
+        "data_words": 242,
+        "stack_words": 100,
+        "data_total_words": 342,
+        "asm_lines": 1350
+      },
+      {
+        "path": "SO/apps/app_net_server.c",
+        "image_words": 1474,
+        "code_words": 1192,
+        "data_words": 276,
+        "stack_words": 100,
+        "data_total_words": 376,
+        "asm_lines": 1413
+      },
+      {
+        "path": "SO/apps/app_hello.c",
+        "image_words": 141,
+        "code_words": 106,
+        "data_words": 29,
+        "stack_words": 100,
+        "data_total_words": 129,
+        "asm_lines": 139
+      }
+    ]
+  },
+  "kernel_full_fallback": {
+    "line_usage": 6110,
+    "usage": {
+      "limit": 4096,
+      "code_words": 5549,
+      "code_free": -1453,
+      "data_words": 2036,
+      "stack_words": 100,
+      "data_total_words": 2136,
+      "data_free": 1960,
+      "physical_words": 6132,
+      "code_ok": 0,
+      "data_ok": 1
+    }
+  }
+}

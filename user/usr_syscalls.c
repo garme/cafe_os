@@ -3,7 +3,7 @@
 
 // Agregador de compatibilidade. Para overlays menores, inclua apenas os módulos usados:
 // usr_proc.c, usr_io.c, usr_stdio.c, usr_sync.c, usr_pipe.c, usr_shm.c,
-// usr_msg.c, usr_signal.c, usr_thread.c.
+// usr_msg.c, usr_signal.c, usr_thread.c, usr_net.c.
 #include "../user/usr_proc.c"
 #include "../user/usr_sync.c"
 #include "../user/usr_io.c"
@@ -13,5 +13,6 @@
 #include "../user/usr_shm.c"
 #include "../user/usr_msg.c"
 #include "../user/usr_thread.c"
+#include "../user/usr_net.c"
 
 #endif

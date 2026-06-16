@@ -10,6 +10,5 @@
 #include "kernel/sys_io.c"
 #include "kernel/sys_msg.c"
 #include "kernel/sys_thread.c"
-#include "kernel/sys_thread_exit.c"
 
 #endif

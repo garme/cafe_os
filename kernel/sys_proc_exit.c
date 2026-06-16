@@ -3,9 +3,8 @@
 
 void kernel_exit() {
     curr_pcb->state = STATE_TERMINATED;
-    kernel_release_process_resources(current_pid);
+    free(curr_pcb->mem_base);
     wakeup_waiters(current_pid);
-    kernel_need_resched = 1;
 }
 
 #endif

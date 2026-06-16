@@ -1,12 +1,8 @@
 #ifndef SYS_DISPATCH_INC
 #define SYS_DISPATCH_INC
 
-// Fallback para compilacao Kernel isolada: dispatcher completo.
-//
-// No modo Kernel+Overlay, a IDE substitui este arquivo por uma versao
-// seletiva em memoria. Mesmo assim, este arquivo precisa ser coerente
-// com sys_kernel_includes.inc: tudo que e chamado aqui deve estar
-// declarado pelos includes do fallback.
+// Fallback para compilação Kernel isolada: dispatcher completo.
+// No modo Kernel+Overlay, a IDE substitui este arquivo por uma versão seletiva em memória.
 void kernel_dispatch_syscall() {
     if (tmp_sys_id == 1) { kernel_exit(); }
     if (tmp_sys_id == 2) { kernel_wait(tmp_sys_arg); }
@@ -22,7 +18,7 @@ void kernel_dispatch_syscall() {
         curr_pcb->ac = isr_tmp_ac;
     }
     if (tmp_sys_id == 8) { kernel_mutex_unlock(); }
-    if (tmp_sys_id == 9) { kernel_need_resched = 1; }
+    if (tmp_sys_id == 9) { }
     if (tmp_sys_id == 10) { kernel_print_char(tmp_sys_arg); }
     if (tmp_sys_id == 11) {
         isr_tmp_ac = kernel_read_char();
@@ -62,7 +58,11 @@ void kernel_dispatch_syscall() {
         curr_pcb->ac = isr_tmp_ac;
     }
     if (tmp_sys_id == 30) {
-        isr_tmp_ac = kernel_thread_exit();
+        isr_tmp_ac = kernel_net_out(tmp_sys_arg);
+        curr_pcb->ac = isr_tmp_ac;
+    }
+    if (tmp_sys_id == 31) {
+        isr_tmp_ac = kernel_net_in(tmp_sys_arg);
         curr_pcb->ac = isr_tmp_ac;
     }
 }
