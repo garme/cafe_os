@@ -11,4 +11,12 @@ int thread_create(int task_addr, int priority) {
     return sys_ret_val;
 }
 
+int thread_exit() {
+    asm("MOV 0");  asm("SOP PUSH_OP");
+    asm("MOV 32"); asm("SOP PUSH_OP");
+    asm("INT SYSCALL_INT");
+    asm("STA sys_ret_val");
+    return sys_ret_val;
+}
+
 #endif

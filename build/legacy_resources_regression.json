@@ -1,0 +1,913 @@
+{
+  "legacy_overlay_count": 29,
+  "scenario_count": 20,
+  "legacy_overlays": [
+    {
+      "file": "legado_01_counter_a.c",
+      "limit": 4096,
+      "code_words": 226,
+      "code_free": 3870,
+      "data_words": 35,
+      "stack_words": 100,
+      "data_total_words": 135,
+      "data_free": 3961,
+      "physical_words": 4131,
+      "code_ok": 1,
+      "data_ok": 1
+    },
+    {
+      "file": "legado_01_counter_b.c",
+      "limit": 4096,
+      "code_words": 226,
+      "code_free": 3870,
+      "data_words": 35,
+      "stack_words": 100,
+      "data_total_words": 135,
+      "data_free": 3961,
+      "physical_words": 4131,
+      "code_ok": 1,
+      "data_ok": 1
+    },
+    {
+      "file": "legado_02_mutex_a.c",
+      "limit": 4096,
+      "code_words": 303,
+      "code_free": 3793,
+      "data_words": 36,
+      "stack_words": 100,
+      "data_total_words": 136,
+      "data_free": 3960,
+      "physical_words": 4132,
+      "code_ok": 1,
+      "data_ok": 1
+    },
+    {
+      "file": "legado_02_mutex_b.c",
+      "limit": 4096,
+      "code_words": 303,
+      "code_free": 3793,
+      "data_words": 36,
+      "stack_words": 100,
+      "data_total_words": 136,
+      "data_free": 3960,
+      "physical_words": 4132,
+      "code_ok": 1,
+      "data_ok": 1
+    },
+    {
+      "file": "legado_03_semaphore_a.c",
+      "limit": 4096,
+      "code_words": 262,
+      "code_free": 3834,
+      "data_words": 36,
+      "stack_words": 100,
+      "data_total_words": 136,
+      "data_free": 3960,
+      "physical_words": 4132,
+      "code_ok": 1,
+      "data_ok": 1
+    },
+    {
+      "file": "legado_03_semaphore_b.c",
+      "limit": 4096,
+      "code_words": 262,
+      "code_free": 3834,
+      "data_words": 36,
+      "stack_words": 100,
+      "data_total_words": 136,
+      "data_free": 3960,
+      "physical_words": 4132,
+      "code_ok": 1,
+      "data_ok": 1
+    },
+    {
+      "file": "legado_04_exit_a.c",
+      "limit": 4096,
+      "code_words": 305,
+      "code_free": 3791,
+      "data_words": 36,
+      "stack_words": 100,
+      "data_total_words": 136,
+      "data_free": 3960,
+      "physical_words": 4132,
+      "code_ok": 1,
+      "data_ok": 1
+    },
+    {
+      "file": "legado_04_exit_b.c",
+      "limit": 4096,
+      "code_words": 262,
+      "code_free": 3834,
+      "data_words": 36,
+      "stack_words": 100,
+      "data_total_words": 136,
+      "data_free": 3960,
+      "physical_words": 4132,
+      "code_ok": 1,
+      "data_ok": 1
+    },
+    {
+      "file": "legado_05_wait_a.c",
+      "limit": 4096,
+      "code_words": 353,
+      "code_free": 3743,
+      "data_words": 39,
+      "stack_words": 100,
+      "data_total_words": 139,
+      "data_free": 3957,
+      "physical_words": 4135,
+      "code_ok": 1,
+      "data_ok": 1
+    },
+    {
+      "file": "legado_05_wait_b.c",
+      "limit": 4096,
+      "code_words": 305,
+      "code_free": 3791,
+      "data_words": 37,
+      "stack_words": 100,
+      "data_total_words": 137,
+      "data_free": 3959,
+      "physical_words": 4133,
+      "code_ok": 1,
+      "data_ok": 1
+    },
+    {
+      "file": "legado_06_kill_a.c",
+      "limit": 4096,
+      "code_words": 262,
+      "code_free": 3834,
+      "data_words": 36,
+      "stack_words": 100,
+      "data_total_words": 136,
+      "data_free": 3960,
+      "physical_words": 4132,
+      "code_ok": 1,
+      "data_ok": 1
+    },
+    {
+      "file": "legado_06_kill_b.c",
+      "limit": 4096,
+      "code_words": 337,
+      "code_free": 3759,
+      "data_words": 40,
+      "stack_words": 100,
+      "data_total_words": 140,
+      "data_free": 3956,
+      "physical_words": 4136,
+      "code_ok": 1,
+      "data_ok": 1
+    },
+    {
+      "file": "legado_07_signal_a.c",
+      "limit": 4096,
+      "code_words": 358,
+      "code_free": 3738,
+      "data_words": 43,
+      "stack_words": 100,
+      "data_total_words": 143,
+      "data_free": 3953,
+      "physical_words": 4139,
+      "code_ok": 1,
+      "data_ok": 1
+    },
+    {
+      "file": "legado_07_signal_b.c",
+      "limit": 4096,
+      "code_words": 237,
+      "code_free": 3859,
+      "data_words": 27,
+      "stack_words": 100,
+      "data_total_words": 127,
+      "data_free": 3969,
+      "physical_words": 4123,
+      "code_ok": 1,
+      "data_ok": 1
+    },
+    {
+      "file": "legado_08_pause_a.c",
+      "limit": 4096,
+      "code_words": 390,
+      "code_free": 3706,
+      "data_words": 43,
+      "stack_words": 100,
+      "data_total_words": 143,
+      "data_free": 3953,
+      "physical_words": 4139,
+      "code_ok": 1,
+      "data_ok": 1
+    },
+    {
+      "file": "legado_08_pause_b.c",
+      "limit": 4096,
+      "code_words": 239,
+      "code_free": 3857,
+      "data_words": 30,
+      "stack_words": 100,
+      "data_total_words": 130,
+      "data_free": 3966,
+      "physical_words": 4126,
+      "code_ok": 1,
+      "data_ok": 1
+    },
+    {
+      "file": "legado_09_sleep_lebre.c",
+      "limit": 4096,
+      "code_words": 339,
+      "code_free": 3757,
+      "data_words": 47,
+      "stack_words": 100,
+      "data_total_words": 147,
+      "data_free": 3949,
+      "physical_words": 4143,
+      "code_ok": 1,
+      "data_ok": 1
+    },
+    {
+      "file": "legado_09_sleep_tartaruga.c",
+      "limit": 4096,
+      "code_words": 339,
+      "code_free": 3757,
+      "data_words": 47,
+      "stack_words": 100,
+      "data_total_words": 147,
+      "data_free": 3949,
+      "physical_words": 4143,
+      "code_ok": 1,
+      "data_ok": 1
+    },
+    {
+      "file": "legado_10_pipe_consumidor.c",
+      "limit": 4096,
+      "code_words": 254,
+      "code_free": 3842,
+      "data_words": 25,
+      "stack_words": 100,
+      "data_total_words": 125,
+      "data_free": 3971,
+      "physical_words": 4121,
+      "code_ok": 1,
+      "data_ok": 1
+    },
+    {
+      "file": "legado_10_pipe_produtor.c",
+      "limit": 4096,
+      "code_words": 240,
+      "code_free": 3856,
+      "data_words": 23,
+      "stack_words": 100,
+      "data_total_words": 123,
+      "data_free": 3973,
+      "physical_words": 4119,
+      "code_ok": 1,
+      "data_ok": 1
+    },
+    {
+      "file": "legado_11_shm_a.c",
+      "limit": 4096,
+      "code_words": 378,
+      "code_free": 3718,
+      "data_words": 41,
+      "stack_words": 100,
+      "data_total_words": 141,
+      "data_free": 3955,
+      "physical_words": 4137,
+      "code_ok": 1,
+      "data_ok": 1
+    },
+    {
+      "file": "legado_11_shm_b.c",
+      "limit": 4096,
+      "code_words": 374,
+      "code_free": 3722,
+      "data_words": 41,
+      "stack_words": 100,
+      "data_total_words": 141,
+      "data_free": 3955,
+      "physical_words": 4137,
+      "code_ok": 1,
+      "data_ok": 1
+    },
+    {
+      "file": "legado_12_spawn.c",
+      "limit": 4096,
+      "code_words": 417,
+      "code_free": 3679,
+      "data_words": 70,
+      "stack_words": 100,
+      "data_total_words": 170,
+      "data_free": 3926,
+      "physical_words": 4166,
+      "code_ok": 1,
+      "data_ok": 1
+    },
+    {
+      "file": "legado_13_spawn_loop.c",
+      "limit": 4096,
+      "code_words": 291,
+      "code_free": 3805,
+      "data_words": 46,
+      "stack_words": 100,
+      "data_total_words": 146,
+      "data_free": 3950,
+      "physical_words": 4142,
+      "code_ok": 1,
+      "data_ok": 1
+    },
+    {
+      "file": "legado_14_msg_spawn.c",
+      "limit": 4096,
+      "code_words": 442,
+      "code_free": 3654,
+      "data_words": 43,
+      "stack_words": 100,
+      "data_total_words": 143,
+      "data_free": 3953,
+      "physical_words": 4139,
+      "code_ok": 1,
+      "data_ok": 1
+    },
+    {
+      "file": "legado_15_thread_inc_dec.c",
+      "limit": 4096,
+      "code_words": 429,
+      "code_free": 3667,
+      "data_words": 49,
+      "stack_words": 100,
+      "data_total_words": 149,
+      "data_free": 3947,
+      "physical_words": 4145,
+      "code_ok": 1,
+      "data_ok": 1
+    },
+    {
+      "file": "legado_16_keyboard_echo.c",
+      "limit": 4096,
+      "code_words": 58,
+      "code_free": 4038,
+      "data_words": 9,
+      "stack_words": 100,
+      "data_total_words": 109,
+      "data_free": 3987,
+      "physical_words": 4105,
+      "code_ok": 1,
+      "data_ok": 1
+    },
+    {
+      "file": "legado_17_thread_prod_cons.c",
+      "limit": 4096,
+      "code_words": 328,
+      "code_free": 3768,
+      "data_words": 36,
+      "stack_words": 100,
+      "data_total_words": 136,
+      "data_free": 3960,
+      "physical_words": 4132,
+      "code_ok": 1,
+      "data_ok": 1
+    },
+    {
+      "file": "legado_19_shell.c",
+      "limit": 4096,
+      "code_words": 1246,
+      "code_free": 2850,
+      "data_words": 1540,
+      "stack_words": 100,
+      "data_total_words": 1640,
+      "data_free": 2456,
+      "physical_words": 5636,
+      "code_ok": 1,
+      "data_ok": 1
+    }
+  ],
+  "kernel_overlay_scenarios": [
+    {
+      "scenario": "counter",
+      "files": [
+        "legado_01_counter_a.c",
+        "legado_01_counter_b.c"
+      ],
+      "syscalls": [
+        "exit",
+        "yield",
+        "print_char"
+      ],
+      "network_protocols": [],
+      "limit": 4096,
+      "code_words": 2590,
+      "code_free": 1506,
+      "data_words": 1032,
+      "stack_words": 100,
+      "data_total_words": 1132,
+      "data_free": 2964,
+      "physical_words": 5128,
+      "code_ok": 1,
+      "data_ok": 1
+    },
+    {
+      "scenario": "mutex",
+      "files": [
+        "legado_02_mutex_a.c",
+        "legado_02_mutex_b.c"
+      ],
+      "syscalls": [
+        "exit",
+        "mutex_trylock",
+        "mutex_unlock",
+        "yield",
+        "print_char"
+      ],
+      "network_protocols": [],
+      "limit": 4096,
+      "code_words": 2660,
+      "code_free": 1436,
+      "data_words": 1189,
+      "stack_words": 100,
+      "data_total_words": 1289,
+      "data_free": 2807,
+      "physical_words": 5285,
+      "code_ok": 1,
+      "data_ok": 1
+    },
+    {
+      "scenario": "semaphore",
+      "files": [
+        "legado_03_semaphore_a.c",
+        "legado_03_semaphore_b.c"
+      ],
+      "syscalls": [
+        "exit",
+        "sem_lock",
+        "sem_unlock",
+        "yield",
+        "print_char"
+      ],
+      "network_protocols": [],
+      "limit": 4096,
+      "code_words": 2785,
+      "code_free": 1311,
+      "data_words": 1109,
+      "stack_words": 100,
+      "data_total_words": 1209,
+      "data_free": 2887,
+      "physical_words": 5205,
+      "code_ok": 1,
+      "data_ok": 1
+    },
+    {
+      "scenario": "exit",
+      "files": [
+        "legado_04_exit_a.c",
+        "legado_04_exit_b.c"
+      ],
+      "syscalls": [
+        "exit",
+        "sem_lock",
+        "sem_unlock",
+        "yield",
+        "print_char"
+      ],
+      "network_protocols": [],
+      "limit": 4096,
+      "code_words": 2785,
+      "code_free": 1311,
+      "data_words": 1152,
+      "stack_words": 100,
+      "data_total_words": 1252,
+      "data_free": 2844,
+      "physical_words": 5248,
+      "code_ok": 1,
+      "data_ok": 1
+    },
+    {
+      "scenario": "wait",
+      "files": [
+        "legado_05_wait_a.c",
+        "legado_05_wait_b.c"
+      ],
+      "syscalls": [
+        "exit",
+        "wait",
+        "sem_lock",
+        "sem_unlock",
+        "yield",
+        "print_char"
+      ],
+      "network_protocols": [],
+      "limit": 4096,
+      "code_words": 2863,
+      "code_free": 1233,
+      "data_words": 1248,
+      "stack_words": 100,
+      "data_total_words": 1348,
+      "data_free": 2748,
+      "physical_words": 5344,
+      "code_ok": 1,
+      "data_ok": 1
+    },
+    {
+      "scenario": "kill",
+      "files": [
+        "legado_06_kill_a.c",
+        "legado_06_kill_b.c"
+      ],
+      "syscalls": [
+        "exit",
+        "kill",
+        "sem_lock",
+        "sem_unlock",
+        "yield",
+        "print_char"
+      ],
+      "network_protocols": [],
+      "limit": 4096,
+      "code_words": 3060,
+      "code_free": 1036,
+      "data_words": 1189,
+      "stack_words": 100,
+      "data_total_words": 1289,
+      "data_free": 2807,
+      "physical_words": 5285,
+      "code_ok": 1,
+      "data_ok": 1
+    },
+    {
+      "scenario": "signal",
+      "files": [
+        "legado_07_signal_a.c",
+        "legado_07_signal_b.c"
+      ],
+      "syscalls": [
+        "exit",
+        "kill",
+        "sem_lock",
+        "sem_unlock",
+        "yield",
+        "print_char",
+        "signal",
+        "sigreturn",
+        "get_signal"
+      ],
+      "network_protocols": [],
+      "limit": 4096,
+      "code_words": 3534,
+      "code_free": 562,
+      "data_words": 1185,
+      "stack_words": 100,
+      "data_total_words": 1285,
+      "data_free": 2811,
+      "physical_words": 5281,
+      "code_ok": 1,
+      "data_ok": 1
+    },
+    {
+      "scenario": "pause",
+      "files": [
+        "legado_08_pause_a.c",
+        "legado_08_pause_b.c"
+      ],
+      "syscalls": [
+        "exit",
+        "wait",
+        "kill",
+        "sem_lock",
+        "sem_unlock",
+        "yield",
+        "print_char",
+        "pause",
+        "signal",
+        "sigreturn",
+        "get_signal"
+      ],
+      "network_protocols": [],
+      "limit": 4096,
+      "code_words": 3779,
+      "code_free": 317,
+      "data_words": 1225,
+      "stack_words": 100,
+      "data_total_words": 1325,
+      "data_free": 2771,
+      "physical_words": 5321,
+      "code_ok": 1,
+      "data_ok": 1
+    },
+    {
+      "scenario": "sleep",
+      "files": [
+        "legado_09_sleep_lebre.c",
+        "legado_09_sleep_tartaruga.c"
+      ],
+      "syscalls": [
+        "exit",
+        "sem_lock",
+        "sem_unlock",
+        "yield",
+        "print_char",
+        "sleep"
+      ],
+      "network_protocols": [],
+      "limit": 4096,
+      "code_words": 3047,
+      "code_free": 1049,
+      "data_words": 1289,
+      "stack_words": 100,
+      "data_total_words": 1389,
+      "data_free": 2707,
+      "physical_words": 5385,
+      "code_ok": 1,
+      "data_ok": 1
+    },
+    {
+      "scenario": "pipe",
+      "files": [
+        "legado_10_pipe_consumidor.c",
+        "legado_10_pipe_produtor.c"
+      ],
+      "syscalls": [
+        "exit",
+        "sem_lock",
+        "sem_unlock",
+        "yield",
+        "print_char",
+        "write_pipe",
+        "read_pipe"
+      ],
+      "network_protocols": [],
+      "limit": 4096,
+      "code_words": 3094,
+      "code_free": 1002,
+      "data_words": 1085,
+      "stack_words": 100,
+      "data_total_words": 1185,
+      "data_free": 2911,
+      "physical_words": 5181,
+      "code_ok": 1,
+      "data_ok": 1
+    },
+    {
+      "scenario": "shm",
+      "files": [
+        "legado_11_shm_a.c",
+        "legado_11_shm_b.c"
+      ],
+      "syscalls": [
+        "exit",
+        "mutex_trylock",
+        "mutex_unlock",
+        "yield",
+        "print_char",
+        "sleep",
+        "shmget"
+      ],
+      "network_protocols": [],
+      "limit": 4096,
+      "code_words": 3108,
+      "code_free": 988,
+      "data_words": 1365,
+      "stack_words": 100,
+      "data_total_words": 1465,
+      "data_free": 2631,
+      "physical_words": 5461,
+      "code_ok": 1,
+      "data_ok": 1
+    },
+    {
+      "scenario": "spawn",
+      "files": [
+        "legado_12_spawn.c"
+      ],
+      "syscalls": [
+        "exit",
+        "wait",
+        "sem_lock",
+        "sem_unlock",
+        "spawn",
+        "yield",
+        "print_char",
+        "sleep"
+      ],
+      "network_protocols": [],
+      "limit": 4096,
+      "code_words": 3783,
+      "code_free": 313,
+      "data_words": 1009,
+      "stack_words": 100,
+      "data_total_words": 1109,
+      "data_free": 2987,
+      "physical_words": 5105,
+      "code_ok": 1,
+      "data_ok": 1
+    },
+    {
+      "scenario": "spawn_loop",
+      "files": [
+        "legado_13_spawn_loop.c"
+      ],
+      "syscalls": [
+        "exit",
+        "wait",
+        "sem_lock",
+        "sem_unlock",
+        "spawn",
+        "yield",
+        "print_char",
+        "sleep"
+      ],
+      "network_protocols": [],
+      "limit": 4096,
+      "code_words": 3783,
+      "code_free": 313,
+      "data_words": 859,
+      "stack_words": 100,
+      "data_total_words": 959,
+      "data_free": 3137,
+      "physical_words": 4955,
+      "code_ok": 1,
+      "data_ok": 1
+    },
+    {
+      "scenario": "messages",
+      "files": [
+        "legado_14_msg_spawn.c"
+      ],
+      "syscalls": [
+        "exit",
+        "wait",
+        "sem_lock",
+        "sem_unlock",
+        "spawn",
+        "yield",
+        "print_char",
+        "sleep",
+        "msg_send",
+        "msg_recv"
+      ],
+      "network_protocols": [],
+      "limit": 4096,
+      "code_words": 3972,
+      "code_free": 124,
+      "data_words": 1012,
+      "stack_words": 100,
+      "data_total_words": 1112,
+      "data_free": 2984,
+      "physical_words": 5108,
+      "code_ok": 1,
+      "data_ok": 1
+    },
+    {
+      "scenario": "threads",
+      "files": [
+        "legado_15_thread_inc_dec.c"
+      ],
+      "syscalls": [
+        "exit",
+        "wait",
+        "sem_lock",
+        "sem_unlock",
+        "yield",
+        "print_char",
+        "thread_create"
+      ],
+      "network_protocols": [],
+      "limit": 4096,
+      "code_words": 3693,
+      "code_free": 403,
+      "data_words": 1002,
+      "stack_words": 100,
+      "data_total_words": 1102,
+      "data_free": 2994,
+      "physical_words": 5098,
+      "code_ok": 1,
+      "data_ok": 1
+    },
+    {
+      "scenario": "keyboard",
+      "files": [
+        "legado_16_keyboard_echo.c"
+      ],
+      "syscalls": [
+        "exit",
+        "yield",
+        "print_char",
+        "read_char"
+      ],
+      "network_protocols": [],
+      "limit": 4096,
+      "code_words": 2600,
+      "code_free": 1496,
+      "data_words": 569,
+      "stack_words": 100,
+      "data_total_words": 669,
+      "data_free": 3427,
+      "physical_words": 4665,
+      "code_ok": 1,
+      "data_ok": 1
+    },
+    {
+      "scenario": "producer_consumer",
+      "files": [
+        "legado_17_thread_prod_cons.c"
+      ],
+      "syscalls": [
+        "exit",
+        "wait",
+        "sem_lock",
+        "sem_unlock",
+        "yield",
+        "print_char",
+        "read_char",
+        "thread_create"
+      ],
+      "network_protocols": [],
+      "limit": 4096,
+      "code_words": 3711,
+      "code_free": 385,
+      "data_words": 888,
+      "stack_words": 100,
+      "data_total_words": 988,
+      "data_free": 3108,
+      "physical_words": 4984,
+      "code_ok": 1,
+      "data_ok": 1
+    },
+    {
+      "scenario": "shell",
+      "files": [
+        "legado_19_shell.c"
+      ],
+      "syscalls": [
+        "exit",
+        "yield",
+        "print_char",
+        "read_char"
+      ],
+      "network_protocols": [],
+      "limit": 4096,
+      "code_words": 2600,
+      "code_free": 1496,
+      "data_words": 3288,
+      "stack_words": 100,
+      "data_total_words": 3388,
+      "data_free": 708,
+      "physical_words": 7384,
+      "code_ok": 1,
+      "data_ok": 1
+    },
+    {
+      "scenario": "tcp",
+      "files": [
+        "app_net_server.c",
+        "app_net_client.c"
+      ],
+      "syscalls": [
+        "exit",
+        "sem_lock",
+        "sem_unlock",
+        "yield",
+        "print_char",
+        "net_out",
+        "net_in"
+      ],
+      "network_protocols": [
+        "TCP"
+      ],
+      "limit": 4096,
+      "code_words": 2932,
+      "code_free": 1164,
+      "data_words": 3535,
+      "stack_words": 100,
+      "data_total_words": 3635,
+      "data_free": 461,
+      "physical_words": 7631,
+      "code_ok": 1,
+      "data_ok": 1
+    },
+    {
+      "scenario": "udp",
+      "files": [
+        "app_net_udp_server.c",
+        "app_net_udp_client.c"
+      ],
+      "syscalls": [
+        "exit",
+        "yield",
+        "print_char",
+        "net_out",
+        "net_in"
+      ],
+      "network_protocols": [
+        "UDP"
+      ],
+      "limit": 4096,
+      "code_words": 2737,
+      "code_free": 1359,
+      "data_words": 3106,
+      "stack_words": 100,
+      "data_total_words": 3206,
+      "data_free": 890,
+      "physical_words": 7202,
+      "code_ok": 1,
+      "data_ok": 1
+    }
+  ]
+}

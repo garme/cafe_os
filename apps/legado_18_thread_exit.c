@@ -16,8 +16,6 @@ void thread_curta() {
     }
     printstr("T-exit\n");
     thread_exit();
-
-    // Não deve imprimir.
     printstr("T-ERRO\n");
 }
 

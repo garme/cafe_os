@@ -1,11 +1,11 @@
 #ifndef SYS_PROC_WAIT_C
 #define SYS_PROC_WAIT_C
-
 void kernel_wait(int target_pid) {
+    if (target_pid < 0 || target_pid >= MAX_PROCESSES) { return; }
     if (pcb[target_pid].state != STATE_TERMINATED) {
         curr_pcb->state = STATE_WAITING;
         curr_pcb->waiting_for_pid = target_pid;
+        kernel_need_resched = 1;
     }
 }
-
 #endif

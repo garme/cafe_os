@@ -1,8 +1,6 @@
 #ifndef USR_READ_CHAR_C
 #define USR_READ_CHAR_C
-#include "../user/usr_abi.h"
-
-int sys_ret_val;
+#include "../user/usr_runtime.c"
 
 int read_char() {
     asm("MOV 0"); asm("SOP PUSH_OP"); asm("MOV 11"); asm("SOP PUSH_OP");

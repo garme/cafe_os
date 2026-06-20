@@ -2,9 +2,9 @@
 #include "kernel/sys_config.inc"
 
 // ESCOLHA O SEU ESCALONADOR AQUI (Comente um e descomente o outro)
-//#include "sys_sched_fp.c"    // Prioridade Fixa
+//#include "kernel/sys_sched_fp.c"    // Prioridade Fixa
 #include "kernel/sys_sched_rr.c"    // Round-Robin
-//#include "sys_sched_dp.c"    // Aging
+//#include "kernel/sys_sched_dp.c"    // Aging
 
 #include "kernel/sys_kernel_includes.inc"
 #include "kernel/sys_dispatch.inc"
@@ -113,10 +113,11 @@ void main() {
     // O dispatcher é gerado pela IDE no modo Kernel+Overlay.
     // Em Kernel isolado, kernel/sys_dispatch.inc fornece o dispatcher completo.
     // =================================================================
+    kernel_need_resched = 0;
     kernel_dispatch_syscall();
 
-    // 6. Resolução da Syscall: Força o escalonador a atuar e salta para o fluxo de restauro
-    schedule(); 
+    // Syscalls leves retornam à mesma tarefa; bloqueio/yield/exit solicitam troca.
+    if (kernel_need_resched == 1) { schedule(); } 
     
     asm("JMP dispatcher_restore_context");
     
@@ -146,6 +147,7 @@ void main() {
     curr_pcb->ac = isr_tmp_ac;
     curr_pcb->sp = isr_tmp_sp;
 
+    kernel_tick_update();
     schedule(); 
     
     // Rótulo de reentrada (Aproveitado pelo Fault e Syscall se precisarem)

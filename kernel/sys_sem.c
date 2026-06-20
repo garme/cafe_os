@@ -8,6 +8,7 @@ void kernel_sem_lock() {
         SEM_STATE = 1;
     } else {
         pcb[current_pid].state = STATE_BLOCKED;
+        kernel_need_resched = 1;
     }
 }
 

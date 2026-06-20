@@ -16,6 +16,7 @@ int kernel_write_pipe(int val) {
 
     if (pipe_count == PIPE_SIZE) {
         curr_pcb->state = STATE_WAITING_PIPE_WRITE;
+        kernel_need_resched = 1;
         return 0; // Falha
     }
     
@@ -42,6 +43,7 @@ int kernel_read_pipe() {
 
     if (pipe_count == 0) {
         curr_pcb->state = STATE_WAITING_PIPE_READ;
+        kernel_need_resched = 1;
         return -1; // Vazio
     }
     

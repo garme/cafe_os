@@ -1,0 +1,207 @@
+{
+  "version": "4.1",
+  "overlays": {
+    "tcp_client": {
+      "limit": 4096,
+      "code_words": 1252,
+      "code_free": 2844,
+      "data_words": 250,
+      "stack_words": 100,
+      "data_total_words": 350,
+      "data_free": 3746,
+      "physical_words": 4346,
+      "code_ok": 1,
+      "data_ok": 1,
+      "dangerous_duplicate_labels": [],
+      "image_words": 4346
+    },
+    "tcp_server": {
+      "limit": 4096,
+      "code_words": 1262,
+      "code_free": 2834,
+      "data_words": 249,
+      "stack_words": 100,
+      "data_total_words": 349,
+      "data_free": 3747,
+      "physical_words": 4345,
+      "code_ok": 1,
+      "data_ok": 1,
+      "dangerous_duplicate_labels": [],
+      "image_words": 4345
+    },
+    "udp_client": {
+      "limit": 4096,
+      "code_words": 971,
+      "code_free": 3125,
+      "data_words": 214,
+      "stack_words": 100,
+      "data_total_words": 314,
+      "data_free": 3782,
+      "physical_words": 4310,
+      "code_ok": 1,
+      "data_ok": 1,
+      "dangerous_duplicate_labels": [],
+      "image_words": 4310
+    },
+    "udp_server": {
+      "limit": 4096,
+      "code_words": 1202,
+      "code_free": 2894,
+      "data_words": 200,
+      "stack_words": 100,
+      "data_total_words": 300,
+      "data_free": 3796,
+      "physical_words": 4296,
+      "code_ok": 1,
+      "data_ok": 1,
+      "dangerous_duplicate_labels": [],
+      "image_words": 4296
+    }
+  },
+  "kernel_overlay": {
+    "tcp_client": {
+      "limit": 4096,
+      "code_words": 2924,
+      "code_free": 1172,
+      "data_words": 2016,
+      "stack_words": 100,
+      "data_total_words": 2116,
+      "data_free": 1980,
+      "physical_words": 6112,
+      "code_ok": 1,
+      "data_ok": 1,
+      "protocols": [
+        "TCP"
+      ],
+      "roles": [
+        "TCP cliente"
+      ],
+      "dangerous_duplicate_labels": [],
+      "image_words": 6112
+    },
+    "tcp_server": {
+      "limit": 4096,
+      "code_words": 2924,
+      "code_free": 1172,
+      "data_words": 2025,
+      "stack_words": 100,
+      "data_total_words": 2125,
+      "data_free": 1971,
+      "physical_words": 6121,
+      "code_ok": 1,
+      "data_ok": 1,
+      "protocols": [
+        "TCP"
+      ],
+      "roles": [
+        "TCP servidor"
+      ],
+      "dangerous_duplicate_labels": [],
+      "image_words": 6121
+    },
+    "udp_client": {
+      "limit": 4096,
+      "code_words": 2729,
+      "code_free": 1367,
+      "data_words": 1696,
+      "stack_words": 100,
+      "data_total_words": 1796,
+      "data_free": 2300,
+      "physical_words": 5792,
+      "code_ok": 1,
+      "data_ok": 1,
+      "protocols": [
+        "UDP"
+      ],
+      "roles": [
+        "UDP cliente"
+      ],
+      "dangerous_duplicate_labels": [],
+      "image_words": 5792
+    },
+    "udp_server": {
+      "limit": 4096,
+      "code_words": 2729,
+      "code_free": 1367,
+      "data_words": 1913,
+      "stack_words": 100,
+      "data_total_words": 2013,
+      "data_free": 2083,
+      "physical_words": 6009,
+      "code_ok": 1,
+      "data_ok": 1,
+      "protocols": [
+        "UDP"
+      ],
+      "roles": [
+        "UDP servidor"
+      ],
+      "dangerous_duplicate_labels": [],
+      "image_words": 6009
+    },
+    "tcp_pair": {
+      "limit": 4096,
+      "code_words": 2932,
+      "code_free": 1164,
+      "data_words": 3535,
+      "stack_words": 100,
+      "data_total_words": 3635,
+      "data_free": 461,
+      "physical_words": 7631,
+      "code_ok": 1,
+      "data_ok": 1,
+      "protocols": [
+        "TCP"
+      ],
+      "roles": [
+        "TCP cliente",
+        "TCP servidor"
+      ],
+      "dangerous_duplicate_labels": [],
+      "image_words": 7631
+    },
+    "udp_pair": {
+      "limit": 4096,
+      "code_words": 2737,
+      "code_free": 1359,
+      "data_words": 3106,
+      "stack_words": 100,
+      "data_total_words": 3206,
+      "data_free": 890,
+      "physical_words": 7202,
+      "code_ok": 1,
+      "data_ok": 1,
+      "protocols": [
+        "UDP"
+      ],
+      "roles": [
+        "UDP cliente",
+        "UDP servidor"
+      ],
+      "dangerous_duplicate_labels": [],
+      "image_words": 7202
+    },
+    "tcp_udp_clients": {
+      "limit": 4096,
+      "code_words": 2932,
+      "code_free": 1164,
+      "data_words": 3209,
+      "stack_words": 100,
+      "data_total_words": 3309,
+      "data_free": 787,
+      "physical_words": 7305,
+      "code_ok": 1,
+      "data_ok": 1,
+      "protocols": [
+        "TCP",
+        "UDP"
+      ],
+      "roles": [
+        "TCP cliente",
+        "UDP cliente"
+      ],
+      "dangerous_duplicate_labels": [],
+      "image_words": 7305
+    }
+  }
+}

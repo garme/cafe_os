@@ -5,7 +5,7 @@
 // No modo Kernel+Overlay, a IDE substitui este arquivo por uma versão seletiva em memória.
 #include "kernel/sys_mem.c"
 #include "kernel/sys_ipc.c"
-#include "kernel/sys_overlay.c"
+#include "kernel/sys_overlay_shared.c"
 #include "kernel/sys_net.c"
 
 #endif

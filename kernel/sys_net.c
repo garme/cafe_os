@@ -1,18 +1,14 @@
 #ifndef SYS_NET_C
 #define SYS_NET_C
 
-// ===============================================================
-// Driver de rede do CAFE OS / Guilix
-//
-// Portas lógicas do periférico: 40..62.
-// Porta privada do kernel: 63 (seleção do contexto/PID).
-//
-// Antes de cada IN/OUT, o kernel informa o PID atual ao periférico.
-// O dispositivo restaura então SOCKET, IP, PORT, RESULT, ERROR e
-// demais registradores virtuais daquele processo. Os overlays podem
-// compartilhar o periférico sem trocar acidentalmente o socket ou
-// os parâmetros de outro processo.
-// ===============================================================
+/*
+ * Driver genérico de rede do CAFE OS / GUILIX.
+ *
+ * O kernel não conhece TCP nem UDP. Ele apenas valida e encaminha palavras
+ * de E/S às portas 40..62 do periférico. A porta 63 seleciona o contexto/PID.
+ * Assim, usr_net_tcp.c e usr_net_udp.c reutilizam as mesmas syscalls 30/31,
+ * sem aumentar o dispatcher quando um novo protocolo é acrescentado.
+ */
 
 int NET_IO_WORD_MIN = 10240;
 int NET_IO_WORD_MAX = 16127;

@@ -1,0 +1,263 @@
+[
+  {
+    "file": "apps/legado_01_counter_a.c",
+    "ok": true,
+    "code_words": 226,
+    "data_total_words": 135,
+    "physical_words": 4131,
+    "code_ok": 1,
+    "data_ok": 1
+  },
+  {
+    "file": "apps/legado_01_counter_b.c",
+    "ok": true,
+    "code_words": 226,
+    "data_total_words": 135,
+    "physical_words": 4131,
+    "code_ok": 1,
+    "data_ok": 1
+  },
+  {
+    "file": "apps/legado_02_mutex_a.c",
+    "ok": true,
+    "code_words": 303,
+    "data_total_words": 136,
+    "physical_words": 4132,
+    "code_ok": 1,
+    "data_ok": 1
+  },
+  {
+    "file": "apps/legado_02_mutex_b.c",
+    "ok": true,
+    "code_words": 303,
+    "data_total_words": 136,
+    "physical_words": 4132,
+    "code_ok": 1,
+    "data_ok": 1
+  },
+  {
+    "file": "apps/legado_03_semaphore_a.c",
+    "ok": true,
+    "code_words": 262,
+    "data_total_words": 136,
+    "physical_words": 4132,
+    "code_ok": 1,
+    "data_ok": 1
+  },
+  {
+    "file": "apps/legado_03_semaphore_b.c",
+    "ok": true,
+    "code_words": 262,
+    "data_total_words": 136,
+    "physical_words": 4132,
+    "code_ok": 1,
+    "data_ok": 1
+  },
+  {
+    "file": "apps/legado_04_exit_a.c",
+    "ok": true,
+    "code_words": 305,
+    "data_total_words": 136,
+    "physical_words": 4132,
+    "code_ok": 1,
+    "data_ok": 1
+  },
+  {
+    "file": "apps/legado_04_exit_b.c",
+    "ok": true,
+    "code_words": 262,
+    "data_total_words": 136,
+    "physical_words": 4132,
+    "code_ok": 1,
+    "data_ok": 1
+  },
+  {
+    "file": "apps/legado_05_wait_a.c",
+    "ok": true,
+    "code_words": 353,
+    "data_total_words": 139,
+    "physical_words": 4135,
+    "code_ok": 1,
+    "data_ok": 1
+  },
+  {
+    "file": "apps/legado_05_wait_b.c",
+    "ok": true,
+    "code_words": 305,
+    "data_total_words": 137,
+    "physical_words": 4133,
+    "code_ok": 1,
+    "data_ok": 1
+  },
+  {
+    "file": "apps/legado_06_kill_a.c",
+    "ok": true,
+    "code_words": 262,
+    "data_total_words": 136,
+    "physical_words": 4132,
+    "code_ok": 1,
+    "data_ok": 1
+  },
+  {
+    "file": "apps/legado_06_kill_b.c",
+    "ok": true,
+    "code_words": 337,
+    "data_total_words": 140,
+    "physical_words": 4136,
+    "code_ok": 1,
+    "data_ok": 1
+  },
+  {
+    "file": "apps/legado_07_signal_a.c",
+    "ok": true,
+    "code_words": 358,
+    "data_total_words": 143,
+    "physical_words": 4139,
+    "code_ok": 1,
+    "data_ok": 1
+  },
+  {
+    "file": "apps/legado_07_signal_b.c",
+    "ok": true,
+    "code_words": 237,
+    "data_total_words": 127,
+    "physical_words": 4123,
+    "code_ok": 1,
+    "data_ok": 1
+  },
+  {
+    "file": "apps/legado_08_pause_a.c",
+    "ok": true,
+    "code_words": 390,
+    "data_total_words": 143,
+    "physical_words": 4139,
+    "code_ok": 1,
+    "data_ok": 1
+  },
+  {
+    "file": "apps/legado_08_pause_b.c",
+    "ok": true,
+    "code_words": 239,
+    "data_total_words": 130,
+    "physical_words": 4126,
+    "code_ok": 1,
+    "data_ok": 1
+  },
+  {
+    "file": "apps/legado_09_sleep_lebre.c",
+    "ok": true,
+    "code_words": 339,
+    "data_total_words": 147,
+    "physical_words": 4143,
+    "code_ok": 1,
+    "data_ok": 1
+  },
+  {
+    "file": "apps/legado_09_sleep_tartaruga.c",
+    "ok": true,
+    "code_words": 339,
+    "data_total_words": 147,
+    "physical_words": 4143,
+    "code_ok": 1,
+    "data_ok": 1
+  },
+  {
+    "file": "apps/legado_10_pipe_consumidor.c",
+    "ok": true,
+    "code_words": 254,
+    "data_total_words": 125,
+    "physical_words": 4121,
+    "code_ok": 1,
+    "data_ok": 1
+  },
+  {
+    "file": "apps/legado_10_pipe_produtor.c",
+    "ok": true,
+    "code_words": 240,
+    "data_total_words": 123,
+    "physical_words": 4119,
+    "code_ok": 1,
+    "data_ok": 1
+  },
+  {
+    "file": "apps/legado_11_shm_a.c",
+    "ok": true,
+    "code_words": 378,
+    "data_total_words": 141,
+    "physical_words": 4137,
+    "code_ok": 1,
+    "data_ok": 1
+  },
+  {
+    "file": "apps/legado_11_shm_b.c",
+    "ok": true,
+    "code_words": 374,
+    "data_total_words": 141,
+    "physical_words": 4137,
+    "code_ok": 1,
+    "data_ok": 1
+  },
+  {
+    "file": "apps/legado_12_spawn.c",
+    "ok": true,
+    "code_words": 417,
+    "data_total_words": 170,
+    "physical_words": 4166,
+    "code_ok": 1,
+    "data_ok": 1
+  },
+  {
+    "file": "apps/legado_13_spawn_loop.c",
+    "ok": true,
+    "code_words": 291,
+    "data_total_words": 146,
+    "physical_words": 4142,
+    "code_ok": 1,
+    "data_ok": 1
+  },
+  {
+    "file": "apps/legado_14_msg_spawn.c",
+    "ok": true,
+    "code_words": 442,
+    "data_total_words": 143,
+    "physical_words": 4139,
+    "code_ok": 1,
+    "data_ok": 1
+  },
+  {
+    "file": "apps/legado_15_thread_inc_dec.c",
+    "ok": true,
+    "code_words": 429,
+    "data_total_words": 149,
+    "physical_words": 4145,
+    "code_ok": 1,
+    "data_ok": 1
+  },
+  {
+    "file": "apps/legado_16_keyboard_echo.c",
+    "ok": true,
+    "code_words": 58,
+    "data_total_words": 109,
+    "physical_words": 4105,
+    "code_ok": 1,
+    "data_ok": 1
+  },
+  {
+    "file": "apps/legado_17_thread_prod_cons.c",
+    "ok": true,
+    "code_words": 328,
+    "data_total_words": 136,
+    "physical_words": 4132,
+    "code_ok": 1,
+    "data_ok": 1
+  },
+  {
+    "file": "apps/legado_19_shell.c",
+    "ok": true,
+    "code_words": 1246,
+    "data_total_words": 1640,
+    "physical_words": 5636,
+    "code_ok": 1,
+    "data_ok": 1
+  }
+]

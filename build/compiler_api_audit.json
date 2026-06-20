@@ -1,0 +1,178 @@
+{
+  "files": {
+    "codegen.py": {
+      "current_size": 88159,
+      "current_sha256": "0aa47c1cac03b6ff8021ee8499493c8281550959581233ab39b02a6d9915bad7",
+      "current_symbol_count": 33,
+      "original_size": 87398,
+      "lost_vs_original": [],
+      "added_vs_original": [
+        "method:CodeGen.const_to_int"
+      ],
+      "v3_size": 88159,
+      "lost_vs_v3": [],
+      "added_vs_v3": []
+    },
+    "compiler_ast.py": {
+      "current_size": 9912,
+      "current_sha256": "5fde8c2d8ad0c7ad100721269193217b0301386ecb3dfba5bd6234389b092313",
+      "current_symbol_count": 126,
+      "original_size": 9912,
+      "lost_vs_original": [],
+      "added_vs_original": [],
+      "v3_size": 9912,
+      "lost_vs_v3": [],
+      "added_vs_v3": []
+    },
+    "formatter.py": {
+      "current_size": 11602,
+      "current_sha256": "d3a18f3dfaa58af66f77a95b79b6f132bb6cabbf5c007223e17d9b0366801116",
+      "current_symbol_count": 38,
+      "original_size": 11602,
+      "lost_vs_original": [],
+      "added_vs_original": [],
+      "v3_size": 11602,
+      "lost_vs_v3": [],
+      "added_vs_v3": []
+    },
+    "IDE_GCC.py": {
+      "current_size": 197963,
+      "current_sha256": "cdaff5ddf35d65152246f9ca3aab72fe2f0b1601b4773a5f4736d4cea8d27bd3",
+      "current_symbol_count": 137,
+      "original_size": 194277,
+      "lost_vs_original": [],
+      "added_vs_original": [],
+      "v3_size": 197617,
+      "lost_vs_v3": [],
+      "added_vs_v3": []
+    },
+    "lexer.py": {
+      "current_size": 3193,
+      "current_sha256": "564bc2bca8bbf89711fe284bd202258ba130cee1070c5b05b45375ae632b2a83",
+      "current_symbol_count": 1,
+      "original_size": 3193,
+      "lost_vs_original": [],
+      "added_vs_original": [],
+      "v3_size": 3193,
+      "lost_vs_v3": [],
+      "added_vs_v3": []
+    },
+    "optimizer.py": {
+      "current_size": 21919,
+      "current_sha256": "9f4c76f9e5acba03d7c03e3046228e1c1492c3ab4db12b5928a3ab729ebaebbf",
+      "current_symbol_count": 18,
+      "original_size": 20792,
+      "lost_vs_original": [],
+      "added_vs_original": [
+        "function:pass_remove_store_load_same_tmp"
+      ],
+      "v3_size": 21919,
+      "lost_vs_v3": [],
+      "added_vs_v3": []
+    },
+    "parser.py": {
+      "current_size": 40908,
+      "current_sha256": "9cc41f645a8f324b9cd3d9727b2841954944a0a5226a8d202221d489f622590e",
+      "current_symbol_count": 35,
+      "original_size": 40908,
+      "lost_vs_original": [],
+      "added_vs_original": [],
+      "v3_size": 40908,
+      "lost_vs_v3": [],
+      "added_vs_v3": []
+    },
+    "preprocess.py": {
+      "current_size": 10952,
+      "current_sha256": "e79f5aac98b393301fa38cce783f1e55da50157405abbf2c88f683e023445d83",
+      "current_symbol_count": 15,
+      "original_size": 10952,
+      "lost_vs_original": [],
+      "added_vs_original": [],
+      "v3_size": 10952,
+      "lost_vs_v3": [],
+      "added_vs_v3": []
+    },
+    "semantic.py": {
+      "current_size": 45738,
+      "current_sha256": "bcb4af71c906cbd6bb17701bafdc12f226861fbeae868501d49026b9e4fbe0d4",
+      "current_symbol_count": 19,
+      "original_size": 45738,
+      "lost_vs_original": [],
+      "added_vs_original": [],
+      "v3_size": 45738,
+      "lost_vs_v3": [],
+      "added_vs_v3": []
+    },
+    "build_modes.py": {
+      "current_size": 34524,
+      "current_sha256": "6f6b5982fb8a84ce008402593c76ed96a9d8fa9bd408e17fdc5c228cf825c147",
+      "current_symbol_count": 32,
+      "original_size": 9535,
+      "lost_vs_original": [],
+      "added_vs_original": [
+        "function:_stack_size_from_asm",
+        "function:analyze_asm_segments",
+        "function:count_text_lines",
+        "function:detect_network_protocols",
+        "function:detect_network_roles",
+        "function:detect_syscalls_from_asm",
+        "function:detect_syscalls_from_source",
+        "function:find_duplicate_asm_labels",
+        "function:generate_sys_config_inc",
+        "function:generate_sys_dispatch_inc",
+        "function:generate_sys_init_inc",
+        "function:generate_sys_kernel_includes_inc",
+        "function:generate_sys_overlays_inc",
+        "function:generate_sys_signal_inject_inc",
+        "function:generate_sys_tick_inc",
+        "function:make_kernel_selective_vfs",
+        "function:make_overlay_vfs",
+        "function:overlay_label_for_path",
+        "function:validate_segment_limits",
+        "function:validate_unique_asm_labels"
+      ],
+      "v3_size": 31250,
+      "lost_vs_v3": [],
+      "added_vs_v3": [
+        "function:detect_network_protocols",
+        "function:find_duplicate_asm_labels",
+        "function:validate_unique_asm_labels"
+      ]
+    },
+    "assembler_cariri_adv.py": {
+      "current_size": 27809,
+      "current_sha256": "bf69ae570bc75d51db82599b0430a55a3fde50186ccb816e44eb7de18ac7bc4d",
+      "current_symbol_count": 18,
+      "original_size": 23116,
+      "lost_vs_original": [],
+      "added_vs_original": [
+        "method:AssemblerCariri._overlay_lengths",
+        "method:AssemblerCariri.export_overlay_image",
+        "method:AssemblerCariri.export_overlay_initd"
+      ],
+      "v3_size": 23116,
+      "lost_vs_v3": [],
+      "added_vs_v3": [
+        "method:AssemblerCariri._overlay_lengths",
+        "method:AssemblerCariri.export_overlay_image",
+        "method:AssemblerCariri.export_overlay_initd"
+      ]
+    }
+  },
+  "summary": {
+    "lost_symbols_vs_original": 0,
+    "lost_symbols_vs_v3": 0,
+    "restored_runtime_cpu": true,
+    "restored_overlay_assembler": true,
+    "compiler_modes": [
+      "Full",
+      "Kernel",
+      "Overlay",
+      "Kernel+Overlay"
+    ],
+    "network_protocols": [
+      "TCP",
+      "UDP"
+    ]
+  }
+}

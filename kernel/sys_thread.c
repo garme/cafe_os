@@ -1,41 +1,33 @@
 #ifndef SYS_THREAD_C
 #define SYS_THREAD_C
 
-//----------------------------------------------------------------------
-// --- Criação de Threads (Processos Leves) ---
-//----------------------------------------------------------------------
 int kernel_thread_create(int task_addr, int priority) {
-    int i = 0;
-    int free_pid = -1;
+    int i;
+    int free_pid;
     int shared_mem;
-    int stack_offset;
-    
-    // 1. Procura um PID livre (Terminado)
+    int stack_mem;
+    int data_size;
+    int data_is_heap;
+
+    i = 0;
+    free_pid = -1;
     while (i < MAX_PROCESSES && free_pid == -1) {
-        if (pcb[i].state == STATE_TERMINATED) {
-            free_pid = i;
-        }
+        if (pcb[i].state == STATE_TERMINATED) { free_pid = i; }
         i = i + 1;
     }
-    
-    if (free_pid == -1) {
-        return -1;
-    }
-    
-    // 2. Recupera a base de memória compartilhada do processo pai
+    if (free_pid == -1) { return -1; }
+
     shared_mem = curr_pcb->mem_base;
-    
-    // 3. CÁLCULO DO TAMANHO DA PILHA (Fatiamento de 20 palavras)
-    // Se PID 0 é o pai, o topo da pilha é shared_mem + 60.
-    // Se PID 1 é a Thread 1, o topo da pilha é shared_mem + 40.
-    // Se PID 2 é a Thread 2, o topo da pilha é shared_mem + 20.
-    stack_offset = free_pid * 20;
-    stack_offset = 60 - stack_offset;
-    
-    // 4. Montagem da thread
-    // O SP inicial será shared_mem + stack_offset
-    create_process(free_pid, task_addr, shared_mem + stack_offset, priority, shared_mem);
-    
+    data_size = curr_pcb->data_size;
+    data_is_heap = curr_pcb->data_is_heap;
+
+    stack_mem = malloc(64);
+    if (stack_mem == 0) { return -1; }
+
+    create_process_ex(free_pid, task_addr, stack_mem + 64, priority,
+                      curr_pcb->cs, curr_pcb->ds,
+                      shared_mem, data_size, data_is_heap,
+                      stack_mem, 1);
     return free_pid;
 }
 

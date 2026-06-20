@@ -3,10 +3,10 @@
 // =======================================================
 
 // Força o compilador a reservar 1000 posições de memória
-int os_heap[250];
+int os_heap[512];
 
 int HEAP_START;
-int HEAP_SIZE  = 250;  // Tamanho total do Heap
+int HEAP_SIZE  = 512;  // Tamanho total do Heap
 
 // Inicializa o grande bloco de memória livre
 void init_heap() {
@@ -70,8 +70,9 @@ int malloc(int size) {
 // Libera a memória alocada
 // =======================================================
 void free(int ptr) {
-    // Declarações no topo
+    // free(0) é ignorado para evitar corromper o cabeçalho do heap.
     int header_ptr;
+    if (ptr == 0) { return; }
     
     // Recua 2 posições para encontrar o cabeçalho e marca como livre
     header_ptr = ptr - 2;

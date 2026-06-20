@@ -1,82 +1,44 @@
 #ifndef SYS_PROC_SPAWN_C
 #define SYS_PROC_SPAWN_C
 
-void create_process(int pid, int task_addr, int stack_base, int priority, int mem_base) {
-    struct PCB_Struct *p;
-    int *sp_ptr;
-    
-    p = &pcb[pid];
-    
-    p->state = STATE_READY;
-    p->ac = 0;
-    p->pc = task_addr;
-    p->cs = KERNEL_CS;
-    p->ds = KERNEL_DS;
-    p->ss = KERNEL_SS;
-    p->priority = priority;
-    p->age = 0;
-    p->mem_base = mem_base;
-    p->waiting_for_pid = -1;
-    p->wakeup_tick = 0;
-    p->alarm_tick = 0;
-    p->pending_signal = 0;
-    p->signal_handler = 0;
-    p->saved_pc = 0;
-    p->in_signal = 0;
-    
-    p->sig_saved_sp = 0;
-    p->sig_saved_ac = 0;
-    p->sig_saved_ptr = 0;
-    p->sig_saved_idx = 0;
-    p->sig_saved_lhs = 0;
-    p->sig_saved_val = 0;
-    p->sig_saved_left_cond = 0;
-    p->sig_saved_left = 0;
-    p->sig_saved_right = 0;
-    p->sig_saved_arr_base = 0;
-    p->sig_saved_step = 0;
-    p->sig_saved_flags = 0;
-        
-    sp_ptr = &ram[stack_base - 1]; 
-
-    *sp_ptr = task_addr; sp_ptr = sp_ptr - 1;
-    *sp_ptr = 8;         sp_ptr = sp_ptr - 1;
-    *sp_ptr = 0;         sp_ptr = sp_ptr - 1;
-    *sp_ptr = 0;         sp_ptr = sp_ptr - 1;
-    *sp_ptr = 0;         sp_ptr = sp_ptr - 1;
-    *sp_ptr = 0;         sp_ptr = sp_ptr - 1;
-    *sp_ptr = 0;         sp_ptr = sp_ptr - 1;
-    *sp_ptr = 0;         sp_ptr = sp_ptr - 1;
-    *sp_ptr = 0;         sp_ptr = sp_ptr - 1;
-    *sp_ptr = 0;         sp_ptr = sp_ptr - 1;
-    *sp_ptr = 0; 
-    
-    p->sp = stack_base - 11;
-}
-
 int kernel_spawn(int task_addr, int priority) {
-    int i = 0;
-    int free_pid = -1;
-    int mem;
-    
+    int i;
+    int free_pid;
+    int stack_mem;
+    int data_mem;
+    int src_data;
+    int data_size;
+
+    i = 0;
+    free_pid = -1;
     while (i < MAX_PROCESSES && free_pid == -1) {
-        if (pcb[i].state == STATE_TERMINATED) {
-            free_pid = i;
-        }
+        if (pcb[i].state == STATE_TERMINATED) { free_pid = i; }
         i = i + 1;
     }
-    
-    if (free_pid == -1) {
+    if (free_pid == -1) { return -1; }
+
+    data_size = curr_pcb->data_size;
+    if (data_size == 0) { return -1; }
+
+    data_mem = malloc(data_size);
+    if (data_mem == 0) { return -1; }
+
+    src_data = curr_pcb->ds - KERNEL_DS;
+    i = 0;
+    while (i < data_size) {
+        ram[data_mem + i] = ram[src_data + i];
+        i = i + 1;
+    }
+
+    stack_mem = malloc(64);
+    if (stack_mem == 0) {
+        free(data_mem);
         return -1;
     }
-    
-    mem = malloc(40);
-    if (mem == 0) {
-        return -1;
-    }
-    
-    create_process(free_pid, task_addr, mem + 40, priority, mem);
-    
+
+    create_process_ex(free_pid, task_addr, stack_mem + 64, priority,
+                      curr_pcb->cs, KERNEL_DS + data_mem,
+                      data_mem, data_size, 1, stack_mem, 0);
     return free_pid;
 }
 

@@ -5,11 +5,12 @@
 // --- IPC: Filas de Mensagens (VERSÃO SIMPLISTA / ESPARTANA) ---
 //----------------------------------------------------------------------
 
-int ipc_mailbox[2]; // 0 significa "Vazio"
+int ipc_mailbox[3]; // 0 significa "Vazio"
 
 void init_ipc_mailbox() {
     ipc_mailbox[0] = 0; 
     ipc_mailbox[1] = 0;
+    ipc_mailbox[2] = 0;
 }
 
 // Retorna 1 (Sucesso) ou 0 (Caixa cheia/Erro)

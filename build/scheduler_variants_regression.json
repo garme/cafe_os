@@ -1,0 +1,29 @@
+[
+  {
+    "scheduler": "RR",
+    "ok": true,
+    "code_words": 2582,
+    "data_total_words": 737,
+    "code_free": 1514,
+    "data_free": 3359,
+    "physical_words": 4733
+  },
+  {
+    "scheduler": "FP",
+    "ok": true,
+    "code_words": 2539,
+    "data_total_words": 736,
+    "code_free": 1557,
+    "data_free": 3360,
+    "physical_words": 4732
+  },
+  {
+    "scheduler": "DP",
+    "ok": true,
+    "code_words": 2574,
+    "data_total_words": 737,
+    "code_free": 1522,
+    "data_free": 3359,
+    "physical_words": 4733
+  }
+]

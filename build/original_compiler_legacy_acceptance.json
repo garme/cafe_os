@@ -1,0 +1,147 @@
+[
+  {
+    "file": "legado_01_counter_a.c",
+    "ok": true,
+    "lines": 286
+  },
+  {
+    "file": "legado_01_counter_b.c",
+    "ok": true,
+    "lines": 286
+  },
+  {
+    "file": "legado_02_mutex_a.c",
+    "ok": true,
+    "lines": 375
+  },
+  {
+    "file": "legado_02_mutex_b.c",
+    "ok": true,
+    "lines": 375
+  },
+  {
+    "file": "legado_03_semaphore_a.c",
+    "ok": true,
+    "lines": 327
+  },
+  {
+    "file": "legado_03_semaphore_b.c",
+    "ok": true,
+    "lines": 327
+  },
+  {
+    "file": "legado_04_exit_a.c",
+    "ok": true,
+    "lines": 377
+  },
+  {
+    "file": "legado_04_exit_b.c",
+    "ok": true,
+    "lines": 327
+  },
+  {
+    "file": "legado_05_wait_a.c",
+    "ok": true,
+    "lines": 433
+  },
+  {
+    "file": "legado_05_wait_b.c",
+    "ok": true,
+    "lines": 379
+  },
+  {
+    "file": "legado_06_kill_a.c",
+    "ok": true,
+    "lines": 327
+  },
+  {
+    "file": "legado_06_kill_b.c",
+    "ok": true,
+    "lines": 416
+  },
+  {
+    "file": "legado_07_signal_a.c",
+    "ok": true,
+    "lines": 440
+  },
+  {
+    "file": "legado_07_signal_b.c",
+    "ok": true,
+    "lines": 294
+  },
+  {
+    "file": "legado_08_pause_a.c",
+    "ok": true,
+    "lines": 471
+  },
+  {
+    "file": "legado_08_pause_b.c",
+    "ok": true,
+    "lines": 295
+  },
+  {
+    "file": "legado_09_sleep_lebre.c",
+    "ok": true,
+    "lines": 418
+  },
+  {
+    "file": "legado_09_sleep_tartaruga.c",
+    "ok": true,
+    "lines": 418
+  },
+  {
+    "file": "legado_10_pipe_consumidor.c",
+    "ok": true,
+    "lines": 318
+  },
+  {
+    "file": "legado_10_pipe_produtor.c",
+    "ok": true,
+    "lines": 298
+  },
+  {
+    "file": "legado_11_shm_a.c",
+    "ok": true,
+    "lines": 460
+  },
+  {
+    "file": "legado_11_shm_b.c",
+    "ok": true,
+    "lines": 456
+  },
+  {
+    "file": "legado_12_spawn.c",
+    "ok": true,
+    "lines": 511
+  },
+  {
+    "file": "legado_13_spawn_loop.c",
+    "ok": true,
+    "lines": 361
+  },
+  {
+    "file": "legado_14_msg_spawn.c",
+    "ok": true,
+    "lines": 540
+  },
+  {
+    "file": "legado_15_thread_inc_dec.c",
+    "ok": true,
+    "lines": 520
+  },
+  {
+    "file": "legado_16_keyboard_echo.c",
+    "ok": true,
+    "lines": 81
+  },
+  {
+    "file": "legado_17_thread_prod_cons.c",
+    "ok": true,
+    "lines": 406
+  },
+  {
+    "file": "legado_19_shell.c",
+    "ok": true,
+    "lines": 1476
+  }
+]

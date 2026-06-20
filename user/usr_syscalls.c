@@ -3,7 +3,8 @@
 
 // Agregador de compatibilidade. Para overlays menores, inclua apenas os módulos usados:
 // usr_proc.c, usr_io.c, usr_stdio.c, usr_sync.c, usr_pipe.c, usr_shm.c,
-// usr_msg.c, usr_signal.c, usr_thread.c, usr_net.c.
+// usr_msg.c, usr_signal.c, usr_thread.c e usr_net.c (compatibilidade TCP).
+// Para UDP, inclua explicitamente usr_net_udp.c para evitar incorporar ambos os protocolos.
 #include "../user/usr_proc.c"
 #include "../user/usr_sync.c"
 #include "../user/usr_io.c"

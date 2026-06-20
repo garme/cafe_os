@@ -1,0 +1,382 @@
+[
+  {
+    "file": "app_counter.c",
+    "ok": true,
+    "seconds": 0.0604,
+    "code_words": 282,
+    "data_total_words": 145,
+    "physical_words": 4141,
+    "code_free": 3814,
+    "data_free": 3951
+  },
+  {
+    "file": "app_hello.c",
+    "ok": true,
+    "seconds": 0.0291,
+    "code_words": 106,
+    "data_total_words": 129,
+    "physical_words": 4125,
+    "code_free": 3990,
+    "data_free": 3967
+  },
+  {
+    "file": "app_net_client.c",
+    "ok": true,
+    "seconds": 0.2706,
+    "code_words": 1252,
+    "data_total_words": 350,
+    "physical_words": 4346,
+    "code_free": 2844,
+    "data_free": 3746
+  },
+  {
+    "file": "app_net_client_host.c",
+    "ok": true,
+    "seconds": 0.1907,
+    "code_words": 1160,
+    "data_total_words": 339,
+    "physical_words": 4335,
+    "code_free": 2936,
+    "data_free": 3757
+  },
+  {
+    "file": "app_net_echo.c",
+    "ok": true,
+    "seconds": 0.1986,
+    "code_words": 1160,
+    "data_total_words": 339,
+    "physical_words": 4335,
+    "code_free": 2936,
+    "data_free": 3757
+  },
+  {
+    "file": "app_net_server.c",
+    "ok": true,
+    "seconds": 0.2253,
+    "code_words": 1262,
+    "data_total_words": 349,
+    "physical_words": 4345,
+    "code_free": 2834,
+    "data_free": 3747
+  },
+  {
+    "file": "app_net_server_loop.c",
+    "ok": true,
+    "seconds": 0.308,
+    "code_words": 1607,
+    "data_total_words": 640,
+    "physical_words": 4636,
+    "code_free": 2489,
+    "data_free": 3456
+  },
+  {
+    "file": "app_net_udp_client.c",
+    "ok": true,
+    "seconds": 0.2859,
+    "code_words": 971,
+    "data_total_words": 314,
+    "physical_words": 4310,
+    "code_free": 3125,
+    "data_free": 3782
+  },
+  {
+    "file": "app_net_udp_server.c",
+    "ok": true,
+    "seconds": 0.2228,
+    "code_words": 1202,
+    "data_total_words": 300,
+    "physical_words": 4296,
+    "code_free": 2894,
+    "data_free": 3796
+  },
+  {
+    "file": "legado_01_counter_a.c",
+    "ok": true,
+    "seconds": 0.047,
+    "code_words": 226,
+    "data_total_words": 135,
+    "physical_words": 4131,
+    "code_free": 3870,
+    "data_free": 3961
+  },
+  {
+    "file": "legado_01_counter_b.c",
+    "ok": true,
+    "seconds": 0.047,
+    "code_words": 226,
+    "data_total_words": 135,
+    "physical_words": 4131,
+    "code_free": 3870,
+    "data_free": 3961
+  },
+  {
+    "file": "legado_02_mutex_a.c",
+    "ok": true,
+    "seconds": 0.0637,
+    "code_words": 303,
+    "data_total_words": 136,
+    "physical_words": 4132,
+    "code_free": 3793,
+    "data_free": 3960
+  },
+  {
+    "file": "legado_02_mutex_b.c",
+    "ok": true,
+    "seconds": 0.0646,
+    "code_words": 303,
+    "data_total_words": 136,
+    "physical_words": 4132,
+    "code_free": 3793,
+    "data_free": 3960
+  },
+  {
+    "file": "legado_03_semaphore_a.c",
+    "ok": true,
+    "seconds": 0.0613,
+    "code_words": 262,
+    "data_total_words": 136,
+    "physical_words": 4132,
+    "code_free": 3834,
+    "data_free": 3960
+  },
+  {
+    "file": "legado_03_semaphore_b.c",
+    "ok": true,
+    "seconds": 0.0656,
+    "code_words": 262,
+    "data_total_words": 136,
+    "physical_words": 4132,
+    "code_free": 3834,
+    "data_free": 3960
+  },
+  {
+    "file": "legado_04_exit_a.c",
+    "ok": true,
+    "seconds": 0.0712,
+    "code_words": 305,
+    "data_total_words": 136,
+    "physical_words": 4132,
+    "code_free": 3791,
+    "data_free": 3960
+  },
+  {
+    "file": "legado_04_exit_b.c",
+    "ok": true,
+    "seconds": 0.057,
+    "code_words": 262,
+    "data_total_words": 136,
+    "physical_words": 4132,
+    "code_free": 3834,
+    "data_free": 3960
+  },
+  {
+    "file": "legado_05_wait_a.c",
+    "ok": true,
+    "seconds": 0.0688,
+    "code_words": 353,
+    "data_total_words": 139,
+    "physical_words": 4135,
+    "code_free": 3743,
+    "data_free": 3957
+  },
+  {
+    "file": "legado_05_wait_b.c",
+    "ok": true,
+    "seconds": 0.0616,
+    "code_words": 305,
+    "data_total_words": 137,
+    "physical_words": 4133,
+    "code_free": 3791,
+    "data_free": 3959
+  },
+  {
+    "file": "legado_06_kill_a.c",
+    "ok": true,
+    "seconds": 0.0558,
+    "code_words": 262,
+    "data_total_words": 136,
+    "physical_words": 4132,
+    "code_free": 3834,
+    "data_free": 3960
+  },
+  {
+    "file": "legado_06_kill_b.c",
+    "ok": true,
+    "seconds": 0.0691,
+    "code_words": 337,
+    "data_total_words": 140,
+    "physical_words": 4136,
+    "code_free": 3759,
+    "data_free": 3956
+  },
+  {
+    "file": "legado_07_signal_a.c",
+    "ok": true,
+    "seconds": 0.0739,
+    "code_words": 358,
+    "data_total_words": 143,
+    "physical_words": 4139,
+    "code_free": 3738,
+    "data_free": 3953
+  },
+  {
+    "file": "legado_07_signal_b.c",
+    "ok": true,
+    "seconds": 0.0505,
+    "code_words": 237,
+    "data_total_words": 127,
+    "physical_words": 4123,
+    "code_free": 3859,
+    "data_free": 3969
+  },
+  {
+    "file": "legado_08_pause_a.c",
+    "ok": true,
+    "seconds": 0.0775,
+    "code_words": 390,
+    "data_total_words": 143,
+    "physical_words": 4139,
+    "code_free": 3706,
+    "data_free": 3953
+  },
+  {
+    "file": "legado_08_pause_b.c",
+    "ok": true,
+    "seconds": 0.0536,
+    "code_words": 239,
+    "data_total_words": 130,
+    "physical_words": 4126,
+    "code_free": 3857,
+    "data_free": 3966
+  },
+  {
+    "file": "legado_09_sleep_lebre.c",
+    "ok": true,
+    "seconds": 0.0743,
+    "code_words": 339,
+    "data_total_words": 147,
+    "physical_words": 4143,
+    "code_free": 3757,
+    "data_free": 3949
+  },
+  {
+    "file": "legado_09_sleep_tartaruga.c",
+    "ok": true,
+    "seconds": 0.0654,
+    "code_words": 339,
+    "data_total_words": 147,
+    "physical_words": 4143,
+    "code_free": 3757,
+    "data_free": 3949
+  },
+  {
+    "file": "legado_10_pipe_consumidor.c",
+    "ok": true,
+    "seconds": 0.0543,
+    "code_words": 254,
+    "data_total_words": 125,
+    "physical_words": 4121,
+    "code_free": 3842,
+    "data_free": 3971
+  },
+  {
+    "file": "legado_10_pipe_produtor.c",
+    "ok": true,
+    "seconds": 0.0568,
+    "code_words": 240,
+    "data_total_words": 123,
+    "physical_words": 4119,
+    "code_free": 3856,
+    "data_free": 3973
+  },
+  {
+    "file": "legado_11_shm_a.c",
+    "ok": true,
+    "seconds": 0.0827,
+    "code_words": 378,
+    "data_total_words": 141,
+    "physical_words": 4137,
+    "code_free": 3718,
+    "data_free": 3955
+  },
+  {
+    "file": "legado_11_shm_b.c",
+    "ok": true,
+    "seconds": 0.0806,
+    "code_words": 374,
+    "data_total_words": 141,
+    "physical_words": 4137,
+    "code_free": 3722,
+    "data_free": 3955
+  },
+  {
+    "file": "legado_12_spawn.c",
+    "ok": true,
+    "seconds": 0.1882,
+    "code_words": 417,
+    "data_total_words": 170,
+    "physical_words": 4166,
+    "code_free": 3679,
+    "data_free": 3926
+  },
+  {
+    "file": "legado_13_spawn_loop.c",
+    "ok": true,
+    "seconds": 0.0645,
+    "code_words": 291,
+    "data_total_words": 146,
+    "physical_words": 4142,
+    "code_free": 3805,
+    "data_free": 3950
+  },
+  {
+    "file": "legado_14_msg_spawn.c",
+    "ok": true,
+    "seconds": 0.0962,
+    "code_words": 442,
+    "data_total_words": 143,
+    "physical_words": 4139,
+    "code_free": 3654,
+    "data_free": 3953
+  },
+  {
+    "file": "legado_15_thread_inc_dec.c",
+    "ok": true,
+    "seconds": 0.0899,
+    "code_words": 429,
+    "data_total_words": 149,
+    "physical_words": 4145,
+    "code_free": 3667,
+    "data_free": 3947
+  },
+  {
+    "file": "legado_16_keyboard_echo.c",
+    "ok": true,
+    "seconds": 0.0199,
+    "code_words": 58,
+    "data_total_words": 109,
+    "physical_words": 4105,
+    "code_free": 4038,
+    "data_free": 3987
+  },
+  {
+    "file": "legado_17_thread_prod_cons.c",
+    "ok": true,
+    "seconds": 0.0715,
+    "code_words": 328,
+    "data_total_words": 136,
+    "physical_words": 4132,
+    "code_free": 3768,
+    "data_free": 3960
+  },
+  {
+    "file": "legado_19_shell.c",
+    "ok": true,
+    "seconds": 0.2956,
+    "code_words": 1246,
+    "data_total_words": 1640,
+    "physical_words": 5636,
+    "code_free": 2850,
+    "data_free": 2456
+  }
+]

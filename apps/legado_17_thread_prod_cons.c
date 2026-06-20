@@ -1,4 +1,6 @@
-#include "../user/usr_io.c"
+#include "../user/usr_printstr.c"
+#include "../user/usr_print_char.c"
+#include "../user/usr_read_char.c"
 #include "../user/usr_sync.c"
 #include "../user/usr_thread.c"
 
@@ -8,18 +10,6 @@ int addr_produtor;
 int addr_consumidor;
 int buffer_teclado;
 int buffer_cheio;
-
-void printstr_local(char* str) {
-    int i;
-    int c;
-    i = 0;
-    c = str[i];
-    while (c != 0) {
-        print_char(c);
-        i = i + 1;
-        c = str[i];
-    }
-}
 
 void thread_produtor() {
     int c;
@@ -56,8 +46,8 @@ void thread_consumidor() {
 void main() {
     buffer_cheio = 0;
     buffer_teclado = 0;
-    printstr_local("P-C\n");
-    printstr_local(": ");
+    printstr("P-C\n");
+    printstr(": ");
 
     asm("MOV thread_produtor"); asm("STA addr_produtor");
     asm("MOV thread_consumidor"); asm("STA addr_consumidor");
