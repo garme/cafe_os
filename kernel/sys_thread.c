@@ -1,6 +1,9 @@
 #ifndef SYS_THREAD_C
 #define SYS_THREAD_C
 
+// Dependência explícita da criação comum de processos/threads.
+#include "kernel/sys_proc.c"
+
 int kernel_thread_create(int task_addr, int priority) {
     int i;
     int free_pid;

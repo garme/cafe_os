@@ -1,6 +1,9 @@
 #ifndef SYS_PROC_SPAWN_C
 #define SYS_PROC_SPAWN_C
 
+// Dependência explícita da criação comum de processos/threads.
+#include "kernel/sys_proc.c"
+
 int kernel_spawn(int task_addr, int priority) {
     int i;
     int free_pid;

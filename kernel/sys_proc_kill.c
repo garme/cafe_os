@@ -1,5 +1,8 @@
 #ifndef SYS_PROC_KILL_C
 #define SYS_PROC_KILL_C
+
+// Dependência explícita: mantém o módulo autocontido mesmo com IDEs antigas.
+#include "kernel/sys_proc_resources.c"
 void kernel_kill(int target_pid, int signal) {
     struct PCB_Struct *target;
     if (target_pid < 0 || target_pid >= MAX_PROCESSES) { return; }

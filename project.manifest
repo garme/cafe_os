@@ -1,0 +1,12 @@
+[kernel]
+entry = KERNEL.c
+
+[overlays]
+apps/app_hello.c
+apps/app_net_client.c
+apps/app_net_server.c
+
+[notes]
+A IDE permite selecionar quaisquer overlays, inclusive TCP, UDP e aplicações legadas.
+TCP usa user/usr_net_tcp.c; UDP usa user/usr_net_udp.c.
+thread_exit usa syscall 32 para não colidir com net_out/net_in (30/31).

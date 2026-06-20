@@ -1,6 +1,9 @@
 #ifndef SYS_THREAD_EXIT_C
 #define SYS_THREAD_EXIT_C
 
+// Dependência explícita: mantém o módulo autocontido mesmo com IDEs antigas.
+#include "kernel/sys_proc_resources.c"
+
 int kernel_thread_exit() {
     if (curr_pcb->is_thread != 1) { return -1; }
     curr_pcb->state = STATE_TERMINATED;

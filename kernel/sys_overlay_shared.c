@@ -1,5 +1,8 @@
 #ifndef SYS_OVERLAY_SHARED_C
 #define SYS_OVERLAY_SHARED_C
+
+// Dependência explícita da criação comum de processos/threads.
+#include "kernel/sys_proc.c"
 int OVERLAY_MAGIC = 51966;
 int OVERLAY_HEADER_SIZE = 7;
 

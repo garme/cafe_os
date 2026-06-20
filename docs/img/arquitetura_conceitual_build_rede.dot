@@ -1,0 +1,80 @@
+digraph CAFE_OS_Architecture {
+  graph [
+    rankdir=TB,
+    bgcolor="white",
+    nodesep="0.35",
+    ranksep="0.45",
+    pad="0.15"
+  ];
+
+  node [
+    shape=box,
+    style="rounded,filled",
+    fillcolor="#F8FAFF",
+    color="#2F80ED",
+    fontname="Helvetica",
+    fontsize=12,
+    margin="0.10,0.06"
+  ];
+
+  edge [
+    color="#4F4F4F",
+    arrowsize=0.8,
+    penwidth=1.2,
+    fontname="Helvetica",
+    fontsize=10
+  ];
+
+  A [label="IDE / Compilador C", fillcolor="#EAF2FF"];
+  B [label="Compilação dos overlays", fillcolor="#FFF6E5", color="#F39C12"];
+  C [label="Detecção automática\nde syscalls e recursos", fillcolor="#F3ECFF", color="#9B59B6"];
+  D [label="Kernel seletivo", fillcolor="#E8F8EF", color="#27AE60"];
+  E [label="ASM final monolítico", fillcolor="#FFF4F4", color="#EB5757"];
+  F [label="Simulação", fillcolor="#F2F2F2", color="#7F8C8D"];
+
+  subgraph cluster_os {
+    label="CAFE OS / GUILIX";
+    color="#D9E6FF";
+    style="rounded,filled";
+    fillcolor="#FBFDFF";
+    fontname="Helvetica-Bold";
+    fontsize=12;
+
+    K [label="kernel/", fillcolor="#EEF7F1", color="#27AE60"];
+    U [label="user/", fillcolor="#F4EEFF", color="#9B59B6"];
+    P [label="apps/", fillcolor="#FFF7EA", color="#F39C12"];
+  }
+
+  subgraph cluster_net {
+    label="Subsistema de rede";
+    color="#CFEFF7";
+    style="rounded,filled";
+    fillcolor="#FAFEFF";
+    fontname="Helvetica-Bold";
+    fontsize=12;
+
+    N0 [label="usr_net_core.c", fillcolor="#E8FAFD", color="#00A8CC"];
+    NT [label="usr_net_tcp.c", fillcolor="#E8FAFD", color="#00A8CC"];
+    NU [label="usr_net_udp.c", fillcolor="#E8FAFD", color="#00A8CC"];
+    NK [label="sys_net.c", fillcolor="#E8FAFD", color="#00A8CC"];
+    NP [label="Periférico Network", fillcolor="#E8FAFD", color="#00A8CC"];
+    NH [label="Sockets TCP e UDP do host", fillcolor="#E8FAFD", color="#00A8CC"];
+  }
+
+  A -> B;
+  B -> C;
+  C -> D;
+  D -> E;
+  B -> E;
+  E -> F;
+
+  K -> D;
+  U -> B;
+  P -> B;
+
+  NT -> N0;
+  NU -> N0;
+  N0 -> NK;
+  NK -> NP;
+  NP -> NH;
+}

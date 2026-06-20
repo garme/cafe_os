@@ -72,38 +72,9 @@ O CAFE OS / GUILIX foi concebido como um laboratório didático para estudar, im
 
 ## 🧠 Arquitetura conceitual
 
-```mermaid
-flowchart TD
-    A[IDE / Compilador C] --> B[Compilação dos overlays]
-    B --> C[Detecção automática de syscalls e recursos]
-    C --> D[Kernel seletivo]
-    D --> E[ASM final monolítico]
-    B --> E
-    E --> F[Simulação]
-
-    subgraph OS[CAFE OS / GUILIX]
-        K[kernel/]
-        U[user/]
-        P[apps/]
-    end
-
-    subgraph NET[Subsistema de rede]
-        N0[usr_net_core.c]
-        NT[usr_net_tcp.c]
-        NU[usr_net_udp.c]
-        NK[sys_net.c]
-        NP[Periférico Network]
-        NH[Sockets TCP e UDP do host]
-    end
-
-    K --> D
-    U --> B
-    P --> B
-
-    NT --> N0
-    NU --> N0
-    N0 --> NK --> NP --> NH
-```
+<p align="center">
+  <img src="docs/img/arquitetura_conceitual_build_rede.svg" alt="Arquitetura conceitual do fluxo de build e do subsistema de rede" width="980">
+</p>
 
 A IDE é o centro do fluxo de build. O desenvolvedor não precisa editar manualmente o kernel para adicionar uma aplicação: basta criar um arquivo em `apps/` e selecioná-lo no modo **Kernel+Overlay**.
 
