@@ -15,6 +15,12 @@ void udp_newline() {
 }
 
 void main() {
+    int i = 0;
+    
+    while ( i < 15) {
+        i = i + 1;
+        }
+        
     udp_socket = net_udp_socket();
 
     if (udp_socket < 0) {
@@ -29,7 +35,7 @@ void main() {
     /* 127.0.0.1:8082; low=146, high=31. */
     if (net_udp_sendto_ipv4(
             udp_socket,
-            127, 0, 0, 1,
+            192, 168, 0, 13,
             146, 31
         ) < 0) {
         printstr("UDP CLIENT: envio falhou");

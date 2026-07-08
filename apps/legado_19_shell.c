@@ -12,6 +12,7 @@
  *   - ENTER pode chegar como CR=13 ou LF=10.
  *   - BACKSPACE pode chegar como 8 ou 127.
  *   - print_char() envia bytes ao terminal de video.
+ *   - FF=12 solicita limpeza total da tela.
  *
  * Este app foi escrito de forma simples para caber bem como overlay
  * e funcionar tanto no simulador quanto no export ESP32 VGA/PS2.
@@ -109,57 +110,61 @@ void sh_print_from(int pos) {
 
 void sh_clear() {
     /*
-     * FF=12 limpa a tela no video_esp32_compatible.py.
-     * Em terminais que nao tratam FF, as quebras de linha abaixo
-     * ainda dao um efeito visual aceitavel.
+     * O byte FF=12 e o comando de limpeza do terminal CompSim.
+     * O simulador desktop ja o interpreta. O firmware VGA/PS2 deve
+     * intercepta-lo e executar Terminal.clear().
+     *
+     * Nao envie quebras de linha depois do FF: o prompt seguinte
+     * deve aparecer diretamente no canto superior esquerdo.
      */
     print_char(12);
-
-    sh_newline();
-    sh_newline();
-    sh_newline();
 }
 
 void sh_help() {
     sh_puts("Comandos disponiveis:");
     sh_newline();
 
-    sh_puts("  help        mostra esta ajuda");
+    sh_puts(" help mostra esta ajuda");
     sh_newline();
 
-    sh_puts("  ver         mostra a versao do shell");
+    sh_puts(" ver mostra a versao do shell");
     sh_newline();
 
-    sh_puts("  about       mostra informacoes do CAFE OS");
+    sh_puts(" about mostra informacoes do CAFE OS");
     sh_newline();
 
-    sh_puts("  uname       mostra a plataforma simulada");
+    sh_puts(" uname mostra a plataforma simulada");
     sh_newline();
 
-    sh_puts("  mem         mostra o perfil de memoria");
+    sh_puts(" mem mostra o perfil de memoria");
     sh_newline();
 
-    sh_puts("  ps          mostra uma tabela simples de tarefas");
+    sh_puts(" ps mostra uma tabela simples de tarefas");
     sh_newline();
 
-    sh_puts("  echo TEXTO  imprime TEXTO");
+    sh_puts(" echo TEXTO imprime TEXTO");
     sh_newline();
 
-    sh_puts("  clear       limpa a tela");
+    sh_puts(" clear limpa a tela");
     sh_newline();
 
-    sh_puts("  exit        encerra o shell");
+    sh_puts(" exit encerra o shell");
     sh_newline();
 
     sh_puts("Easter eggs: cafe, cariri, sudo, sl, matrix, fortune");
+    sh_newline();
+
+    sh_puts("Extras: chrome, photoshop, coreldraw");
     sh_newline();
 }
 
 void sh_about() {
     sh_puts("CAFE OS / GUILIX");
     sh_newline();
+
     sh_puts("Configurable And Flexible Environment Operating System");
     sh_newline();
+
     sh_puts("Kernel fixo + apps de usuario em overlays.");
     sh_newline();
 }
@@ -167,43 +172,55 @@ void sh_about() {
 void sh_mem() {
     sh_puts("Perfil conservador:");
     sh_newline();
-    sh_puts("  CS     : 4K palavras para codigo");
+
+    sh_puts(" CS : 4K palavras para codigo");
     sh_newline();
-    sh_puts("  DS/SS  : 4K palavras para dados, heap e pilhas");
+
+    sh_puts(" DS/SS : 4K palavras para dados, heap e pilhas");
     sh_newline();
-    sh_puts("  tarefas: maximo 3");
+
+    sh_puts(" tarefas: maximo 3");
     sh_newline();
-    sh_puts("  heap   : 512 palavras");
+
+    sh_puts(" heap : 512 palavras");
     sh_newline();
 }
 
 void sh_ps() {
-    sh_puts("PID  TIPO       ESTADO");
+    sh_puts("PID TIPO ESTADO");
     sh_newline();
-    sh_puts("0    overlay    RUNNING");
+
+    sh_puts("0 overlay RUNNING");
     sh_newline();
-    sh_puts("1    processo   opcional");
+
+    sh_puts("1 processo opcional");
     sh_newline();
-    sh_puts("2    thread     opcional");
+
+    sh_puts("2 thread opcional");
     sh_newline();
 }
 
 void sh_sl() {
-    sh_puts("      ====        ________");
+    sh_puts(" ==== ________");
     sh_newline();
-    sh_puts("  _D _|  |_______/        \\__");
+
+    sh_puts(" _D _| |_______/ \\__");
     sh_newline();
-    sh_puts("   |(_)---  |   HACKING CAFE |");
+
+    sh_puts(" |(_)--- | HACKING CAFE |");
     sh_newline();
-    sh_puts("   /     O-O-O              /");
+
+    sh_puts(" / O-O-O /");
     sh_newline();
 }
 
 void sh_matrix() {
     sh_puts("01001011 01000101 01010010 01001110 01000101 01001100");
     sh_newline();
+
     sh_puts("00110011 00110010 00110000 00110000 01000011 01000001");
     sh_newline();
+
     sh_puts("Wake up, Cariri...");
     sh_newline();
 }
@@ -228,9 +245,25 @@ void sh_sudo() {
     sh_newline();
 }
 
-void sh_banner() {
-    sh_puts("CAFE Shell v0.1");
+void sh_chrome() {
+    sh_puts("Chrome abriu 1 aba e consumiu toda a RAM.");
     sh_newline();
+}
+
+void sh_photoshop() {
+    sh_puts("Photoshop em modo texto: filtro ASCII aplicado.");
+    sh_newline();
+}
+
+void sh_coreldraw() {
+    sh_puts("CorelDRAW abriu o CDR de 1998. Fontes ausentes.");
+    sh_newline();
+}
+
+void sh_banner() {
+    sh_puts("CAFE Shell v0.2");
+    sh_newline();
+
     sh_puts("Digite 'help' para listar comandos.");
     sh_newline();
 }
@@ -239,6 +272,7 @@ void sh_unknown() {
     sh_puts("comando nao encontrado: ");
     sh_print_from(0);
     sh_newline();
+
     sh_puts("digite 'help'");
     sh_newline();
 }
@@ -254,7 +288,7 @@ void sh_handle_command() {
     }
 
     if (sh_streq("ver")) {
-        sh_puts("CAFE Shell v0.1 / overlay userland");
+        sh_puts("CAFE Shell v0.2 / overlay userland");
         sh_newline();
         return;
     }
@@ -321,6 +355,21 @@ void sh_handle_command() {
         return;
     }
 
+    if (sh_streq("chrome")) {
+        sh_chrome();
+        return;
+    }
+
+    if (sh_streq("photoshop")) {
+        sh_photoshop();
+        return;
+    }
+
+    if (sh_streq("coreldraw")) {
+        sh_coreldraw();
+        return;
+    }
+
     if (sh_streq("exit")) {
         sh_puts("bye.");
         sh_newline();
@@ -368,6 +417,7 @@ void main() {
                 sh_newline();
                 line[line_len] = 0;
                 sh_handle_command();
+
                 line_len = 0;
                 line[0] = 0;
                 sh_prompt();
@@ -376,6 +426,7 @@ void main() {
                     sh_newline();
                     line[line_len] = 0;
                     sh_handle_command();
+
                     line_len = 0;
                     line[0] = 0;
                     sh_prompt();
