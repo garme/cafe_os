@@ -2,8 +2,15 @@
 #include "../user/usr_yield.c"
 
 /*
- * Cariri Invaders v1.6
- * Jogo textual para CAFE OS / GUILIX e CPU Cariri.
+ * Cariri Invaders v2.1
+ * Jogo ANSI para CAFE OS / GUILIX e CPU Cariri.
+ *
+ * Revisao visual/funcional:
+ * - sprites de invasores com 3 caracteres e cores por linha;
+ * - campo fechado 80x30 e HUD compacto;
+ * - projeteis com leitura visual mais clara;
+ * - pontuacao por classe de invasor;
+ * - correcao do apagamento de sprites sem clobber de g_i.
  *
  * Projeto orientado às restrições da plataforma:
  * - renderização incremental por cursor ANSI;
@@ -22,53 +29,54 @@
 #define ENEMY_ROWS 3
 #define ENEMY_GAP 6
 #define MAX_WAVE 5
+#define CONTROL_ROW 25
+#define STATUS_ROW 26
 
 #define T_RESET 0
 #define T_RED 3
-#define T_GREEN 6
-#define T_YELLOW 9
-#define T_BLUE 12
-#define T_MAGENTA 15
-#define T_CYAN 18
-#define T_WHITE 21
-#define T_HIDE 24
-#define T_SHOW 28
-#define T_HOME 32
-#define T_TITLE 34
-#define T_SCORE 161
-#define T_WAVE 165
-#define T_LIVES 169
-#define T_CONTROLS 174
-#define T_PAUSED 197
-#define T_READY 212
-#define T_WAVE_CLEAR 219
-#define T_HIT 227
-#define T_GAME_OVER 235
-#define T_VICTORY 272
-#define T_QUIT 311
+#define T_GREEN 7
+#define T_YELLOW 11
+#define T_BLUE 15
+#define T_MAGENTA 19
+#define T_CYAN 23
+#define T_WHITE 27
+#define T_GRAY 31
+#define T_HIDE 35
+#define T_SHOW 39
+#define T_HOME 43
+#define T_TITLE 46
+#define T_SCORE 177
+#define T_WAVE 181
+#define T_LIVES 185
+#define T_CONTROLS 190
+#define T_PAUSED 215
+#define T_READY 230
+#define T_WAVE_CLEAR 236
+#define T_HIT 243
+#define T_GAME_OVER 249
+#define T_VICTORY 266
+#define T_QUIT 282
 
-int text_data[324] = {
-    7003, 12397, 0, 7003, 14641, 27904, 7003, 14642, 27904, 7003, 14643, 27904, 7003, 14644, 27904, 7003,
-    14645, 27904, 7003, 14646, 27904, 7003, 14647, 27904, 7003, 16178, 13676, 0, 7003, 16178, 13672, 0,
-    7003, 18432, 7003, 14646, 27936, 8224, 17184, 16672, 21024, 18720, 21024, 18720, 8224, 18720, 20000, 22048,
-    16672, 17440, 17696, 21024, 21261, 2587, 23344, 27917, 2627, 20565, 8259, 24946, 26994, 26912, 11040, 18261,
-    18764, 18776, 8235, 8261, 21328, 13106, 8278, 18241, 12112, 21298, 3338, 3338, 17772, 26989, 26990, 25888,
-    24947, 8291, 26990, 25455, 8303, 28260, 24947, 8289, 28276, 25971, 8292, 24864, 26990, 30305, 29537, 28462,
-    3338, 3338, 16687, 17440, 28533, 8266, 12108, 8224, 28015, 30309, 29197, 2629, 21328, 16707, 20256, 8224,
-    8224, 8292, 26995, 28769, 29281, 29197, 2640, 8224, 8224, 8224, 8224, 8224, 8304, 24949, 29537, 29197,
-    2641, 8224, 8224, 8224, 8224, 8224, 8307, 24937, 29197, 2573, 2587, 23353, 13165, 20594, 25971, 29545,
-    28526, 25888, 30061, 24864, 29797, 25452, 24864, 28769, 29281, 8297, 28265, 25449, 24946, 11822, 11803, 23344,
-    27904, 21315, 20306, 17696, 0, 8224, 22337, 22085, 8192, 8224, 19529, 22085, 21280, 0, 16687, 17440,
-    28015, 30309, 29216, 8261, 21328, 16707, 20256, 25705, 29552, 24946, 24946, 8224, 20512, 28769, 30067, 24946,
-    8224, 20768, 29537, 26994, 0, 20545, 21843, 16708, 20256, 11552, 20512, 25455, 28276, 26990, 30049, 8239,
-    8273, 8307, 24937, 0, 20594, 25968, 24946, 25901, 29541, 11822, 11776, 20302, 17473, 8261, 19529, 19785,
-    20033, 17473, 8448, 20033, 22085, 8257, 21577, 20039, 18756, 16673, 0, 7003, 14641, 27975, 16717, 17696,
-    20310, 17746, 7003, 12397, 3338, 3338, 16672, 26990, 30305, 29537, 28448, 25448, 25959, 28533, 8289, 28448,
-    28780, 24942, 25972, 24878, 3338, 3338, 21024, 29285, 26990, 26979, 26977, 8316, 8273, 8307, 24937, 0,
-    7003, 14642, 27990, 18772, 20306, 18753, 8475, 23344, 27917, 2573, 2625, 8294, 29295, 29793, 8259, 24946,
-    26994, 26912, 28786, 28532, 25959, 25973, 8303, 8307, 26995, 29797, 28001, 11789, 2573, 2642, 8306, 25961,
-    28265, 25449, 24864, 31776, 20768, 29537, 26880, 21093, 29807, 29294, 24942, 25711, 8289, 28448, 18261, 18764,
-    18776, 11822, 11789, 2560
+int text_data[293] = {
+    7003,12397,0,7003,14641,27904,0,7003,14642,27904,0,7003,14643,27904,0,7003,
+    14644,27904,0,7003,14645,27904,0,7003,14646,27904,0,7003,14647,27904,0,7003,
+    14640,27904,0,7003,16178,13676,0,7003,16178,13672,0,7003,18432,0,7003,14646,
+    27936,8224,8224,8224,8224,8224,8224,8235,11565,11565,11565,11565,11565,11565,11565,11565,
+    11565,11565,11565,11021,2592,8224,8224,8224,8224,8224,8224,8316,8224,8259,16722,18770,
+    18720,18766,22081,17477,21075,8224,8224,31757,2592,8224,8224,8224,8224,8224,8224,8235,
+    11565,11565,11565,11565,11565,11565,11565,11565,11565,11565,11565,11021,2587,23353,14189,8224,
+    8224,8224,8224,8224,8224,8224,8224,8224,15425,15904,15437,15904,12119,23584,31574,32013,
+    2587,23353,13165,8224,8224,8224,8224,16687,17440,28015,30309,8316,8275,20545,17221,8294,
+    28519,28448,31776,20512,28769,30067,24864,31776,20768,29537,26893,2592,8224,8224,8224,8224,
+    8224,8224,8224,8224,20594,25971,29545,28526,25888,30061,24864,29797,25452,24859,23344,27904,
+    0,21315,20306,17696,0,8279,16726,17696,0,8268,18774,17747,8192,0,8257,12100,
+    11594,12108,8301,28534,25970,8316,8275,20545,17221,8294,28519,28448,31776,20512,28769,30067,
+    24864,31776,20768,29537,26994,8192,0,20545,21843,16708,20256,31776,20512,25455,28276,26990,
+    30049,8316,8273,8307,24937,0,20594,25968,24946,25901,29541,0,20302,17473,8268,18765,
+    20545,8448,0,16724,18766,18249,17487,8448,0,7003,14641,27946,10794,8263,16717,17696,
+    20310,17746,8234,10794,7003,12397,3338,21039,20736,0,7003,14642,27946,10794,8278,18772,
+    20306,18753,8480,10794,10779,23344,27917,2642,12113,0,22127,27764,24942,25711,8289,28448,
+    18261,18764,18776,3338,0
 };
 
 int bit_table[10] = {1,2,4,8,16,32,64,128,256,512};
@@ -115,27 +123,6 @@ int g_w;
 int g_pause;
 
 
-void boot_probe() {
-    print_char(67);
-    print_char(65);
-    print_char(82);
-    print_char(73);
-    print_char(82);
-    print_char(73);
-    print_char(32);
-    print_char(71);
-    print_char(65);
-    print_char(77);
-    print_char(69);
-    print_char(32);
-    print_char(66);
-    print_char(79);
-    print_char(79);
-    print_char(84);
-    print_char(13);
-    print_char(10);
-}
-
 void tx(int pos) {
     g_w = text_data[pos];
 
@@ -165,7 +152,11 @@ void set_color(int color_pos) {
 }
 
 void cls() {
-    print_char(12);
+    /* ESC[2J + ESC[H: independente do tratamento de form-feed do host. */
+    print_char(27);
+    print_char(91);
+    print_char(50);
+    print_char(74);
     tx(T_HOME);
 }
 
@@ -202,14 +193,11 @@ void drain_input() {
 }
 
 int wait_key() {
-    drain_input();
-    last_key = read_char();
-
+    /* Não descarte a primeira tecla já recebida pelo FIFO do simulador. */
+    last_key = 0;
     while (last_key == 0) {
-        yield();
         last_key = read_char();
     }
-
     return last_key;
 }
 
@@ -226,6 +214,13 @@ void print_small(int value) {
 }
 
 void print_score(int value) {
+    g_v = 0;
+    while (value >= 1000) {
+        value = value - 1000;
+        g_v = g_v + 1;
+    }
+    print_char(48 + g_v);
+
     g_v = 0;
     while (value >= 100) {
         value = value - 100;
@@ -256,17 +251,31 @@ void draw_frame() {
     set_color(T_CYAN);
 
     cursor_pos(FIELD_TOP, FIELD_LEFT);
-    repeat_char(45, 77);
-    cursor_pos(FIELD_BOTTOM, FIELD_LEFT);
-    repeat_char(45, 77);
+    print_char(43);
+    repeat_char(45, 76);
+    print_char(43);
 
-    cursor_pos(24, 2);
-    set_color(T_WHITE);
+    g_i = FIELD_TOP + 1;
+    while (g_i < FIELD_BOTTOM) {
+        cursor_pos(g_i, FIELD_LEFT);
+        print_char(124);
+        cursor_pos(g_i, FIELD_RIGHT);
+        print_char(124);
+        g_i = g_i + 1;
+    }
+
+    cursor_pos(FIELD_BOTTOM, FIELD_LEFT);
+    print_char(43);
+    repeat_char(45, 76);
+    print_char(43);
+
+    cursor_pos(CONTROL_ROW, 2);
+    set_color(T_GRAY);
     tx(T_CONTROLS);
 }
 
 void clear_status_line() {
-    cursor_pos(25, 1);
+    cursor_pos(STATUS_ROW, 1);
     print_char(27);
     print_char(91);
     print_char(50);
@@ -289,6 +298,8 @@ void draw_hud() {
     tx(T_WAVE);
     set_color(T_CYAN);
     print_small(wave);
+    print_char(47);
+    print_small(MAX_WAVE);
     set_color(T_WHITE);
     tx(T_LIVES);
     set_color(T_GREEN);
@@ -333,7 +344,9 @@ void erase_enemy_grid(int base_y) {
         g_j = 0;
         while (g_j < ENEMY_COLS) {
             if (enemy_alive(g_i, g_j) != 0) {
-                cursor_pos(base_y + (g_i + g_i), enemy_cols_x[g_j]);
+                cursor_pos(base_y + (g_i + g_i), enemy_cols_x[g_j] - 1);
+                print_char(32);
+                print_char(32);
                 print_char(32);
             }
             g_j = g_j + 1;
@@ -342,15 +355,38 @@ void erase_enemy_grid(int base_y) {
     }
 }
 
+void draw_enemy_sprite(int row, int x) {
+    cursor_pos(enemy_y + (row + row), x - 1);
+
+    if (row == 0) {
+        set_color(T_MAGENTA);
+        print_char(60);
+        print_char(77);
+        print_char(62);
+        return;
+    }
+
+    if (row == 1) {
+        set_color(T_CYAN);
+        print_char(47);
+        print_char(87);
+        print_char(92);
+        return;
+    }
+
+    set_color(T_YELLOW);
+    print_char(123);
+    print_char(86);
+    print_char(125);
+}
+
 void draw_enemy_grid() {
-    set_color(T_RED);
     g_i = 0;
     while (g_i < ENEMY_ROWS) {
         g_j = 0;
         while (g_j < ENEMY_COLS) {
             if (enemy_alive(g_i, g_j) != 0) {
-                cursor_pos(enemy_y + (g_i + g_i), enemy_cols_x[g_j]);
-                print_char(87);
+                draw_enemy_sprite(g_i, enemy_cols_x[g_j]);
             }
             g_j = g_j + 1;
         }
@@ -372,6 +408,8 @@ void draw_shot(int x, int y, int c, int color_pos) {
 
 void explosion(int x, int y) {
     draw_shot(x, y, 42, T_YELLOW);
+    pause_ticks(1);
+    draw_shot(x, y, 43, T_WHITE);
     pause_ticks(1);
     draw_shot(x, y, 32, T_RESET);
 }
@@ -444,14 +482,28 @@ void update_player_shot() {
                 g_a = enemy_cols_x[g_j];
                 g_b = enemy_y + (g_i + g_i);
 
-                if (shot_x == g_a) {
-                    if (shot_y == g_b) {
-                        kill_enemy(g_i, g_j);
-                        shot_active = 0;
-                        score = score + 1;
-                        explosion(g_a, g_b);
-                        draw_hud();
-                        return;
+                if (shot_x >= g_a - 1) {
+                    if (shot_x <= g_a + 1) {
+                        if (shot_y == g_b) {
+                            kill_enemy(g_i, g_j);
+                            shot_active = 0;
+
+                            if (g_i == 0) {
+                                score = score + 15;
+                            } else {
+                                if (g_i == 1) {
+                                    score = score + 10;
+                                } else {
+                                    score = score + 5;
+                                }
+                            }
+
+                            cursor_pos(g_b, g_a - 1);
+                            repeat_char(32, 3);
+                            explosion(g_a, g_b);
+                            draw_hud();
+                            return;
+                        }
                     }
                 }
             }
@@ -484,7 +536,7 @@ void spawn_enemy_shot() {
     enemy_shot_active = 1;
     enemy_shot_x = enemy_cols_x[g_j];
     enemy_shot_y = enemy_y + 5;
-    draw_shot(enemy_shot_x, enemy_shot_y, 33, T_MAGENTA);
+    draw_shot(enemy_shot_x, enemy_shot_y, 118, T_RED);
 }
 
 void lose_life() {
@@ -529,7 +581,7 @@ void update_enemy_shot() {
         }
     }
 
-    draw_shot(enemy_shot_x, enemy_shot_y, 33, T_MAGENTA);
+    draw_shot(enemy_shot_x, enemy_shot_y, 118, T_RED);
 }
 
 void update_enemies() {
@@ -692,13 +744,9 @@ void play_game() {
 }
 
 void show_title() {
-    /*
-     * A sonda aparece antes do ANSI e antes da espera pelo teclado.
-     * Se ela não aparecer, o overlay não chegou a executar main()/print_char.
-     */
+    tx(T_SHOW);
     cls();
     current_color = -1;
-    boot_probe();
     tx(T_TITLE);
     wait_key();
     tx(T_HIDE);

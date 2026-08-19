@@ -1,3 +1,17 @@
-CAFE OS / GUILIX - RELATORIO DCE E KERNEL SELETIVO
+=================================================================
+          CAFE OS (GUILIX) - RELATÓRIO DE OTIMIZAÇÃO DCE
+=================================================================
+Total de funções originais analisadas : 2
+Total de funções mantidas no binário  : 2
+Total de funções podadas (mortas)     : 0
 
-O modo Kernel+Overlay detecta as syscalls efetivamente usadas, inclui somente os módulos necessários, gera dispatcher seletivo e elimina funções não alcançáveis. Recursos preservados: processos, spawn, wait, kill, sinais, threads, thread_exit, semáforos, mutexes, pipes, SHM, mensagens, teclado/vídeo, TCP e UDP.
+=================================================================
+--- FUNÇÕES PODADAS (REMOVIDAS DO KERNEL E USER SPACE) ---
+=================================================================
+ Nenhuma função foi podada.
+
+=================================================================
+--- FUNÇÕES MANTIDAS (COMPILADAS NO BINÁRIO FINAL) ---
+=================================================================
+ [+] main
+ [+] soma

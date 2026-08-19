@@ -2,8 +2,15 @@
 #include "../user/usr_yield.c"
 
 /*
- * Cariri Tetris v1.1 final - correção do laço de limpeza de linhas
- * Overlay textual para CAFE OS / GUILIX.
+ * Cariri Tetris v1.3
+ * Overlay ANSI para CAFE OS / GUILIX.
+ *
+ * Revisao visual/funcional:
+ * - tabuleiro fechado com moldura superior e inferior;
+ * - cor da peca ativa definida pelo tetromino;
+ * - blocos fixos alternam azul/ciano para melhorar contraste;
+ * - HUD com SCORE, LINHAS e proxima peca;
+ * - tela de titulo e encerramento reposicionadas para 80x30.
  */
 
 #define BOARD_W 10
@@ -24,32 +31,31 @@
 #define COLOR_WHITE 97
 
 #define T_0 0
-#define T_1 4
-#define T_2 8
-#define T_3 12
-#define T_4 15
-#define T_5 25
-#define T_6 32
-#define T_7 57
-#define T_8 69
-#define T_9 73
-#define T_10 77
-#define T_11 82
-#define T_12 92
-#define T_13 104
-#define T_14 112
-#define T_15 127
+#define T_1 5
+#define T_2 9
+#define T_3 13
+#define T_4 16
+#define T_5 24
+#define T_6 49
+#define T_7 58
+#define T_8 62
+#define T_9 67
+#define T_10 71
+#define T_11 81
+#define T_12 90
+#define T_13 100
+#define T_14 104
+#define T_15 111
 
-int text_data[134] = {
-    7003, 12874, 7003, 18432, 7003, 16178, 13676, 0, 7003, 16178, 13672, 0, 7003, 12875, 0, 17217,
-    21065, 21065, 8276, 17748, 21065, 21280, 16975, 20308, 0, 17217, 21065, 21065, 8276, 17748, 21065, 21248,
-    16687, 17440, 28015, 30309, 8279, 8295, 26994, 24864, 21280, 25701, 29539, 25888, 17747, 20545, 17231, 8291,
-    24937, 8272, 8304, 24949, 29537, 8273, 8307, 24937, 0, 20594, 25971, 29545, 28526, 25888, 30061, 24864,
-    29797, 25452, 24878, 11822, 0, 21315, 20306, 17696, 0, 19529, 20040, 16723, 8192, 18241, 19781, 8271,
-    22085, 20992, 21024, 29285, 26990, 26979, 26977, 8316, 8273, 8307, 24937, 0, 21093, 29807, 29294, 24942,
-    25711, 8289, 28448, 18261, 18764, 18776, 11822, 11776, 19529, 20040, 16672, 17231, 19792, 19525, 21569, 8448,
-    20545, 21843, 16708, 20256, 11552, 20512, 25455, 28276, 26990, 30049, 8239, 8273, 8307, 24937, 0, 16975,
-    16672, 20545, 21076, 18756, 16673, 0
+int text_data[118] = {
+    7003,12874,7003,18432,0,7003,16178,13676,0,7003,16178,13672,0,7003,12875,0,
+    17217,21065,21065,8276,17748,21065,21248,0,16687,17440,28015,30309,8279,8295,26994,24864,
+    21280,25701,29539,25888,21328,16707,17696,25441,26912,20512,28769,30067,24864,20768,29537,26880,
+    0,20594,25971,29545,28526,25888,29797,25452,24832,0,21315,20306,17696,0,19529,20040,
+    16723,8192,0,20562,20312,8192,0,10794,10784,18241,19781,8271,22085,21024,10794,10752,
+    0,21024,29285,26990,26979,26977,8273,8307,24937,0,22127,27764,24942,25711,8289,28448,
+    18261,18764,18776,0,19529,20040,16673,0,20545,21843,16708,20256,20527,20736,0,16975,
+    16672,20545,21076,18756,16673,0
 };
 
 int board[18];
@@ -57,6 +63,8 @@ int bit10[10] = {1,2,4,8,16,32,64,128,256,512};
 int bit16[16] = {1,2,4,8,16,32,64,128,256,512,1024,2048,4096,8192,16384,32768};
 int row_base[4] = {0,4,8,12};
 int piece_base[7] = {0,4,8,12,16,20,24};
+int piece_colors[7] = {96,93,95,92,91,94,97};
+int piece_letters[7] = {73,79,84,83,90,74,76};
 
 /* I, O, T, S, Z, J, L; quatro rotações por peça. */
 int shape_masks[28] = {
@@ -73,6 +81,7 @@ int piece_type;
 int piece_rot;
 int piece_x;
 int piece_y;
+int next_piece;
 
 int score;
 int lines_total;
@@ -183,7 +192,7 @@ void cursor_pos(int row, int col) {
 
 
 void clear_screen() {
-    print_char(12);
+    /* ANSI explícito: funciona no Video.py e em terminais CLI sem depender de FF. */
     tx(T_0);
 }
 
@@ -231,47 +240,68 @@ void drain_input() {
 
 
 int wait_key() {
-    drain_input();
-    last_key = read_char();
-
+    /*
+     * Não drenar o teclado aqui. A versão anterior descartava justamente
+     * a primeira tecla digitada quando ela já estava no FIFO do simulador
+     * ao entrar na tela de abertura.
+     */
+    last_key = 0;
     while (last_key == 0) {
-        yield();
         last_key = read_char();
     }
-
     return last_key;
 }
 
 
-void boot_probe() {
-    tx(T_4);
-    newline();
-}
-
 
 void show_title() {
+    /*
+     * A abertura usa apenas CR/LF e texto. Evitamos posicionamento absoluto
+     * antes do jogo para que nenhum CSI parcial apareça como "6;12H" em
+     * simuladores/terminais que atualizam o vídeo em lotes.
+     */
     show_cursor();
     clear_screen();
     current_color = -1;
-    boot_probe();
+
+    newline();
+    newline();
+    newline();
+    newline();
+    newline();
+
     ansi_color(COLOR_CYAN);
+    repeat_char(32, 32);
+    tx(T_4);
+    newline();
+    newline();
+
+    ansi_color(COLOR_WHITE);
+    repeat_char(32, 17);
     tx(T_5);
     newline();
-    ansi_color(COLOR_WHITE);
-    tx(T_6);
     newline();
+
     ansi_color(COLOR_YELLOW);
-    tx(T_7);
+    repeat_char(32, 32);
+    tx(T_6);
+
     ansi_color(COLOR_RESET);
     wait_key();
+    hide_cursor();
 }
 
 
 void draw_border() {
     ansi_color(COLOR_CYAN);
 
+    cursor_pos(BOARD_TOP - 1, BOARD_LEFT);
+    print_char(43);
+    repeat_char(45, BOARD_W + BOARD_W);
+    print_char(43);
+
     g_i = 0;
-    while (g_i <= BOARD_H) {
+    while (g_i < BOARD_H) {
         cursor_pos(BOARD_TOP + g_i, BOARD_LEFT);
         print_char(124);
         cursor_pos(BOARD_TOP + g_i, BOARD_LEFT + BOARD_W + BOARD_W + 1);
@@ -286,7 +316,7 @@ void draw_border() {
 
     cursor_pos(CONTROL_ROW, 2);
     ansi_color(COLOR_WHITE);
-    tx(T_6);
+    tx(T_5);
 }
 
 
@@ -306,14 +336,21 @@ void status_text(int text, int color) {
 void draw_hud() {
     cursor_pos(BOARD_TOP, HUD_LEFT);
     ansi_color(COLOR_WHITE);
-    tx(T_8);
+    tx(T_7);
     ansi_color(COLOR_YELLOW);
     print_num3(score);
+
     cursor_pos(BOARD_TOP + 2, HUD_LEFT);
     ansi_color(COLOR_WHITE);
-    tx(T_9);
+    tx(T_8);
     ansi_color(COLOR_GREEN);
     print_num3(lines_total);
+
+    cursor_pos(BOARD_TOP + 4, HUD_LEFT);
+    ansi_color(COLOR_WHITE);
+    tx(T_9);
+    ansi_color(piece_colors[next_piece]);
+    print_char(piece_letters[next_piece]);
 }
 
 
@@ -388,7 +425,7 @@ void draw_piece_at(int type, int rot, int px, int py, int visible) {
 
                 if (g_r >= 0) {
                     if (visible != 0) {
-                        draw_cell(g_c, g_r, 1, COLOR_MAGENTA);
+                        draw_cell(g_c, g_r, 1, piece_colors[type]);
                     } else {
                         draw_cell(g_c, g_r, 0, COLOR_RESET);
                     }
@@ -411,7 +448,11 @@ void draw_board() {
 
         while (g_j < BOARD_W) {
             if ((board[g_i] & bit10[g_j]) != 0) {
-                draw_cell(g_j, g_i, 1, COLOR_BLUE);
+                if ((g_i & 1) == 0) {
+                    draw_cell(g_j, g_i, 1, COLOR_BLUE);
+                } else {
+                    draw_cell(g_j, g_i, 1, COLOR_CYAN);
+                }
             } else {
                 draw_cell(g_j, g_i, 0, COLOR_RESET);
             }
@@ -446,7 +487,8 @@ int random_piece() {
 
 
 void spawn_piece() {
-    piece_type = random_piece();
+    piece_type = next_piece;
+    next_piece = random_piece();
     piece_rot = 0;
     piece_x = 3;
     piece_y = 0;
@@ -693,12 +735,14 @@ void reset_game() {
     quit_game = 0;
     paused = 0;
     random_seed = 17;
+    next_piece = random_piece();
 
     hide_cursor();
     clear_screen();
     current_color = -1;
     draw_border();
-    draw_board();
+    /* O tabuleiro acabou de ser zerado e a tela foi limpa: redesenhar 180
+     * celulas vazias aqui apenas atrasa a transicao da abertura para o jogo. */
     spawn_piece();
     status_text(T_15, COLOR_YELLOW);
     cooperative_delay(5);
@@ -729,13 +773,19 @@ int end_screen() {
     show_cursor();
     clear_screen();
     current_color = -1;
+
+    cursor_pos(9, 31);
     ansi_color(COLOR_RED);
     tx(T_10);
-    newline();
+
+    cursor_pos(11, 31);
     ansi_color(COLOR_WHITE);
-    tx(T_8);
+    tx(T_7);
+    ansi_color(COLOR_YELLOW);
     print_num3(score);
-    newline();
+
+    cursor_pos(13, 30);
+    ansi_color(COLOR_WHITE);
     tx(T_11);
 
     while (1 != 0) {

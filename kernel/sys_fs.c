@@ -50,10 +50,10 @@ int FS_COV_VERSION = 2;
  * O total do .COV deve ser:
  *   6 + code_size + data_size <= FS_DYN_SLOT_WORDS
  */
-int FS_DYN_SLOT_WORDS = 1024;
+int FS_DYN_SLOT_WORDS = 1536;
 int FS_DYN_SLOT_COUNT = 1;
 
-int fs_dyn_overlay_pool[1024];
+int fs_dyn_overlay_pool[1536];
 
 int fs_dyn_slot_used;
 int fs_dyn_slot_pid;
